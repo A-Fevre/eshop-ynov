@@ -1,4 +1,5 @@
 using Basket.API.Data.Repositories;
+using Basket.API.Services;
 using BuildingBlocks.Behaviors;
 using BuildingBlocks.Middlewares;
 using FluentValidation;
@@ -17,6 +18,11 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(ValidationBehavior<,>));
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
 
+});
+
+builder.Services.AddHttpClient<ICatalogService, CatalogService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:6060");
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);

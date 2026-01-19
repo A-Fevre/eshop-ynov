@@ -1,3 +1,4 @@
+using Basket.API.Features.Baskets.Commands.AddItemToBasket;
 using Basket.API.Features.Baskets.Commands.CreateBasket;
 using Basket.API.Features.Baskets.Commands.DeleteBasket;
 using Basket.API.Features.Baskets.Queries.GetBasketByUserName;
@@ -61,5 +62,25 @@ public class BasketsController (ISender sender) : ControllerBase
     // TODO Update basket product quantity
     
     //TODO Delete item in user basket
+    
+    
+    /// <summary> Adds a product item to the user's shopping basket.</summary>
+    /// <param name="userName"> The username identifying the shopping basket. </param>
+    /// <param name="request"> The product identifier and quantity to add to the basket. </param>
+    /// <response code="200"> The product was successfully added to the basket. </response>
+    /// <response code="400"> Invalid request payload. </response>
+    /// <response code="404"> The product does not exist in the Catalog service. </response>
+    [HttpPost("items")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AddItemToBasket(
+        string userName,
+        [FromBody] AddItemToBasketRequest request)
+    {
+        var command = new AddItemToBasketCommand(userName, request.ProductId, request.Quantity, request.Color);
+
+        var result = await sender.Send(command);
+
+        return Ok(result);
+    }
     
 }
