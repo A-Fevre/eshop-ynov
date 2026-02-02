@@ -23,9 +23,7 @@ public class CreateBasketCommandHandler(IBasketRepository repository) : ICommand
 
         await ApplyDiscountToItemAsync(cart, cancellationToken);
 
-        var expiration = request.CacheExpirationMinutes.HasValue 
-            ? TimeSpan.FromMinutes(Math.Clamp(request.CacheExpirationMinutes.Value, 1, 30))
-            : (TimeSpan?)null;
+        TimeSpan? expiration = request.CacheExpirationMinutes.HasValue ? TimeSpan.FromMinutes(Math.Clamp(request.CacheExpirationMinutes.Value, 1, 30)) : null;
         
         var basketCart = await repository.CreateBasketAsync(cart, cancellationToken, expiration)
             .ConfigureAwait(false);
