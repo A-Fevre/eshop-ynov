@@ -51,6 +51,9 @@ public class BasketsController (ISender sender) : ControllerBase
     /// <param name="userName">The username whose basket is to be updated.</param>
     /// <param name="productId">The product ID of the item to remove.</param>
     /// <returns>The updated shopping cart or a not-found response if no basket exists for the user.</returns>
+    /// <response code="200">The item was successfully removed from the basket.</response>
+    /// <response code="400">Invalid request (userName or productId invalid).</response>
+    /// <response code="404">The basket does not exist for the specified user.</response>
     [HttpDelete("items/{productId:guid}")]
     [ProducesResponseType(typeof(ShoppingCart), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
