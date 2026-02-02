@@ -1,10 +1,12 @@
 using Basket.API.Data.Repositories;
+using Basket.API.Services;
 using BuildingBlocks.Behaviors;
 using BuildingBlocks.Middlewares;
 using FluentValidation;
 using HealthChecks.UI.Client;
 using Marten;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,11 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(ValidationBehavior<,>));
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
 
+});
+
+builder.Services.AddHttpClient<ICatalogService, CatalogService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:6060");
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
@@ -43,16 +50,27 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(configuration.GetConnectionString("BasketConnection")!)
     .AddRedis(configuration.GetConnectionString("RedisConnection")!);
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Basket.API",
+        Version = "v1"
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket.API v1");
+    });
 }
+
 
 app.UseHttpsRedirection();
 
