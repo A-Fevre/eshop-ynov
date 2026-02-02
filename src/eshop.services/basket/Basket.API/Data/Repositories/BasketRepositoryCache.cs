@@ -40,13 +40,26 @@ public class BasketRepositoryCache(IBasketRepository repository, IDistributedCac
         await cache.RemoveAsync(cacheKey, cancellationToken);
         return await repository.DeleteBasketAsync(userName, cancellationToken);
     }
+    
+    /// <summary>
+    /// Updates the quantity of a specific item in the user's shopping basket.
+    /// Ensures that both the cached and persistent representations of the basket are updated.
+    /// </summary>
+    public async Task<ShoppingCart> UpdateItemQuantityAsync(string userName, Guid productId, int quantity,
+        CancellationToken cancellationToken = default)
+    {
+        var updatedBasket = await repository.UpdateItemQuantityAsync(userName, productId, quantity, cancellationToken);
+        var cacheKey = GenerateKey(userName);
+        await cache.SetObjectAsync(cacheKey, updatedBasket, cancellationToken);
+        return updatedBasket;
+    }
 
     /// <summary>
     /// Retrieves the shopping basket for the specified user.
     /// If the basket is available in the cache, it is returned directly.
     /// Otherwise, it is retrieved from the repository, cached, and then returned.
     /// </summary>
-    /// <param name="userName">The user name associated with the basket to be retrieved.</param>
+    /// <param name="userName">The username associated with the basket to be retrieved.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ShoppingCart"/> instance representing the user's shopping basket.</returns>
     public async Task<ShoppingCart> GetBasketByUserNameAsync(string userName,

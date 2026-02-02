@@ -17,6 +17,12 @@ public interface IBasketRepository
     /// A task that represents the asynchronous operation. The task result is a boolean value indicating whether the delete operation was successful.
     /// </returns>
     Task<bool> DeleteBasketAsync(string userName, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Updates the quantity of a specific item in the user's shopping cart.
+    /// </summary>
+    Task<ShoppingCart> UpdateItemQuantityAsync(string userName, Guid productId, int quantity,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the shopping cart for the specified user by their username.
