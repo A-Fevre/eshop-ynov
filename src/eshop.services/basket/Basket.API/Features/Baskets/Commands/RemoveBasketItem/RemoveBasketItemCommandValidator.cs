@@ -3,7 +3,7 @@ using FluentValidation;
 namespace Basket.API.Features.Baskets.Commands.RemoveBasketItem;
 
 /// <summary>
-/// Validator for <see cref="RemoveBasketItemCommand"/>.
+/// Validator for the <see cref="RemoveBasketItemCommand"/>.
 /// </summary>
 public class RemoveBasketItemCommandValidator : AbstractValidator<RemoveBasketItemCommand>
 {

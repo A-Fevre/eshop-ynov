@@ -1,4 +1,3 @@
-using Basket.API.Features.Baskets.Commands.AddItemToBasket;
 using Basket.API.Features.Baskets.Commands.CreateBasket;
 using Basket.API.Features.Baskets.Commands.DeleteBasket;
 using Basket.API.Features.Baskets.Commands.RemoveBasketItem;
@@ -47,6 +46,21 @@ public class BasketsController (ISender sender) : ControllerBase
     }
 
     /// <summary>
+    /// Removes an item from the shopping basket for the specified user by product ID.
+    /// </summary>
+    /// <param name="userName">The username whose basket is to be updated.</param>
+    /// <param name="productId">The product ID of the item to remove.</param>
+    /// <returns>The updated shopping cart or a not-found response if no basket exists for the user.</returns>
+    [HttpDelete("items/{productId:guid}")]
+    [ProducesResponseType(typeof(ShoppingCart), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShoppingCart>> RemoveBasketItem(string userName, Guid productId)
+    {
+        var result = await sender.Send(new RemoveBasketItemCommand(userName, productId));
+        return Ok(result.UpdatedCart);
+    }
+
+    /// <summary>
     /// Deletes the shopping basket for the specified user.
     /// </summary>
     /// <param name="userName">The username whose shopping basket is to be deleted.</param>
@@ -59,44 +73,6 @@ public class BasketsController (ISender sender) : ControllerBase
         var result = await sender.Send(new DeleteBasketCommand(userName));
         return Ok(result.IsSuccess);
     }
-
-    /// <summary>
-    /// Removes item(s) with the given product ID from the specified user's basket.
-    /// </summary>
-    /// <param name="userName">The username whose basket is to be updated.</param>
-    /// <param name="productId">The product ID of the item(s) to remove.</param>
-    /// <returns>The updated shopping cart, or 404 if the basket does not exist.</returns>
-    [HttpDelete("items/{productId}")]
-    [ProducesResponseType(typeof(ShoppingCart), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ShoppingCart>> RemoveBasketItem(string userName, Guid productId)
-    {
-        var result = await sender.Send(new RemoveBasketItemCommand(userName, productId));
-        return Ok(result.UpdatedCart);
-    }
-
+    
     // TODO Update basket product quantity
-    
-    //TODO Delete item in user basket
-    
-    
-    /// <summary> Adds a product item to the user's shopping basket.</summary>
-    /// <param name="userName"> The username identifying the shopping basket. </param>
-    /// <param name="request"> The product identifier and quantity to add to the basket. </param>
-    /// <response code="200"> The product was successfully added to the basket. </response>
-    /// <response code="400"> Invalid request payload. </response>
-    /// <response code="404"> The product does not exist in the Catalog service. </response>
-    [HttpPost("items")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> AddItemToBasket(
-        string userName,
-        [FromBody] AddItemToBasketRequest request)
-    {
-        var command = new AddItemToBasketCommand(userName, request.ProductId, request.Quantity, request.Color);
-
-        var result = await sender.Send(command);
-
-        return Ok(result);
-    }
-    
 }
