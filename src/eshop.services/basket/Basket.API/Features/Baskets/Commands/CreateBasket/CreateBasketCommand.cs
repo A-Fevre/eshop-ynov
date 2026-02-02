@@ -13,4 +13,7 @@ namespace Basket.API.Features.Baskets.Commands.CreateBasket;
 /// <param name="Cart">
 /// The shopping cart object containing user details and a collection of items to be included in the basket.
 /// </param>
-public record CreateBasketCommand(ShoppingCart Cart) : ICommand<CreateBasketCommandResult>;
+/// <param name="CacheExpirationMinutes">
+/// The created cart is stored in the cache for a default duration of 3 minute and a max value to 30 minutes
+/// </param>
+public record CreateBasketCommand(ShoppingCart Cart, int? CacheExpirationMinutes = null) : ICommand<CreateBasketCommandResult>;

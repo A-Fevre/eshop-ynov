@@ -44,9 +44,10 @@ public class BasketRepository(IDocumentSession session) : IBasketRepository
     /// </summary>
     /// <param name="basket">The shopping cart instance to be created, containing the user's details and items.</param>
     /// <param name="cancellationToken">Optional. A token to cancel the asynchronous operation.</param>
+    /// <param name="cacheExpiration">An optional timer for products stored in the cache with default set to 3 minute.</param>
     /// <returns>The created shopping cart instance.</returns>
     public async Task<ShoppingCart> CreateBasketAsync(ShoppingCart basket,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, TimeSpan? cacheExpiration = null)
     { 
         session.Store(basket);
         await session.SaveChangesAsync(cancellationToken);
