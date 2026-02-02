@@ -18,9 +18,8 @@ public class RemoveBasketItemCommandHandler(IBasketRepository repository)
         var basket = await repository.GetBasketByUserNameAsync(request.UserName, cancellationToken)
             .ConfigureAwait(false);
 
-        var items = basket.Items.ToList();
-        items.RemoveAll(i => i.ProductId == request.ProductId);
-        basket.Items = items;
+         basket.Items = basket.Items.Where(i => i.ProductId != request.ProductId).ToList();
+
 
         var updated = await repository.CreateBasketAsync(basket, cancellationToken)
             .ConfigureAwait(false);
