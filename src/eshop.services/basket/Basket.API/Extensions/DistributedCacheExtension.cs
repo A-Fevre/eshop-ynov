@@ -36,18 +36,19 @@ public static class DistributedCacheExtensions
     /// <param name="key">The key under which the item should be stored in the cache.</param>
     /// <param name="value">The object of type <typeparamref name="T"/> to be stored in the cache.</param>
     /// <param name="token">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <param name="cacheExpiration">An optional timer for products stored in the cache with default set to 1 minute.</param>
     /// <returns>
     /// A task that represents the asynchronous operation of storing the serialized object
     /// in the cache.
     /// </returns>
     public static Task SetObjectAsync<T>(this IDistributedCache cache, string key, T value,
-        CancellationToken token = default, TimeSpan? expiration = null)
+        CancellationToken token = default, TimeSpan? cacheExpiration = null)
     {
         var data = JsonSerializer.SerializeToUtf8Bytes(value);
         
         var options = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = expiration != null && expiration > TimeSpan.FromMinutes(0) ? expiration : TimeSpan.FromMinutes(1)
+            AbsoluteExpirationRelativeToNow = cacheExpiration ?? TimeSpan.FromMinutes(1)
         };
         
         return cache.SetAsync(key, data, options, token);
