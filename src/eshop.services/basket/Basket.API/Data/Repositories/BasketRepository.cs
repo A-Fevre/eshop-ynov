@@ -21,7 +21,24 @@ public class BasketRepository(IDocumentSession session) : IBasketRepository
         await session.SaveChangesAsync(cancellationToken);
         return true;
     }
+    
+    /// <summary>
+    /// Updates the quantity of a specific item in the user's shopping cart.
+    /// </summary>
+    public async Task<ShoppingCart> UpdateItemQuantityAsync(string userName, Guid productId, int quantity,
+        CancellationToken cancellationToken = default)
+    {
+        var basket =  await GetBasketByUserNameAsync(userName, cancellationToken);
+        var item = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+        if (item is null)
+            throw new BasketNotFoundException($"Item with ID {productId} not found in the basket for user {userName}.");
 
+        item.Quantity = quantity;
+        session.Store(basket);
+        await session.SaveChangesAsync(cancellationToken);
+        return basket;
+    }
+    
     /// <summary>
     /// Retrieves the shopping cart for the specified user by their username.
     /// </summary>
@@ -33,10 +50,7 @@ public class BasketRepository(IDocumentSession session) : IBasketRepository
         CancellationToken cancellationToken = default)
     {
         var basket = await session.LoadAsync<ShoppingCart>(userName, cancellationToken);
-        if(basket is null)
-            throw new BasketNotFoundException(userName);
-        
-        return basket;
+        return basket ?? throw new BasketNotFoundException(userName);
     }
 
     /// <summary>

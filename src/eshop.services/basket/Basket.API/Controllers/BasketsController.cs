@@ -1,5 +1,7 @@
+using Basket.API.Features.Baskets.Commands.AddItemToBasket;
 using Basket.API.Features.Baskets.Commands.CreateBasket;
 using Basket.API.Features.Baskets.Commands.DeleteBasket;
+using Basket.API.Features.Baskets.Commands.UpdateBasket;
 using Basket.API.Features.Baskets.Commands.RemoveBasketItem;
 using Basket.API.Features.Baskets.Queries.GetBasketByUserName;
 using Basket.API.Models;
@@ -77,5 +79,45 @@ public class BasketsController (ISender sender) : ControllerBase
         return Ok(result.IsSuccess);
     }
     
-    // TODO Update basket product quantity
+    /// <summary>
+    /// Updates the quantity of a specific item in the user's shopping basket.
+    /// <param name="userName"></param>
+    /// <param name="request"></param>
+    /// <returns>A boolean value indicating whether the item quantity was successfully updated or a not-found response if no basket exists for the user.</returns>
+    /// </summary>
+    /// <response code="200">Item quantity updated successfully.</response>
+    /// <response code="400">Invalid request data.</response>
+    /// <response code="404">Basket or item not found.</response>
+    [HttpPut]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<bool>> UpdateItemQuantity(string userName, [FromBody] UpdateBasketCommand request)
+    {
+        var command = request with { Username = userName };
+        var result = await sender.Send(command);
+       return Ok(result);
+    }
+    
+    //TODO Delete item in user basket
+    
+    
+    /// <summary> Adds a product item to the user's shopping basket.</summary>
+    /// <param name="userName"> The username identifying the shopping basket. </param>
+    /// <param name="request"> The product identifier and quantity to add to the basket. </param>
+    /// <response code="200"> The product was successfully added to the basket. </response>
+    /// <response code="400"> Invalid request payload. </response>
+    /// <response code="404"> The product does not exist in the Catalog service. </response>
+    [HttpPost("items")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AddItemToBasket(
+        string userName,
+        [FromBody] AddItemToBasketRequest request)
+    {
+        var command = new AddItemToBasketCommand(userName, request.ProductId, request.Quantity, request.Color);
+
+        var result = await sender.Send(command);
+
+        return Ok(result);
+    }
+    
 }
