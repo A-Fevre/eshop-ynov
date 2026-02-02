@@ -24,6 +24,8 @@ public class BasketsController (ISender sender) : ControllerBase
     /// </summary>
     /// <param name="userName">The username whose shopping basket is to be retrieved.</param>
     /// <returns>The shopping basket associated with the specified username or a not-found response if no basket exists.</returns>
+    /// <response code="200">The shopping basket was successfully retrieved.</response>
+    /// <response code="404">The basket does not exist for the specified user.</response>
     [HttpGet]
     [ProducesResponseType(typeof(ShoppingCart), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
@@ -39,6 +41,7 @@ public class BasketsController (ISender sender) : ControllerBase
     /// <param name="userName">The username for whom the shopping basket is to be created.</param>
     /// <param name="request">The request containing the details of the shopping basket to be created.</param>
     /// <returns>The result of the create basket operation, including success status and associated username.</returns>
+    /// <response code="201">The shopping basket was successfully created.</response>
     [HttpPost]
     [ProducesResponseType(typeof(CreateBasketCommandResult), StatusCodes.Status201Created)]
     public async Task<ActionResult<CreateBasketCommandResult>> CreateBasket(string userName, [FromBody] CreateBasketCommand request)
@@ -70,6 +73,8 @@ public class BasketsController (ISender sender) : ControllerBase
     /// </summary>
     /// <param name="userName">The username whose shopping basket is to be deleted.</param>
     /// <returns>A boolean value indicating whether the basket was successfully deleted or a not-found response if no basket exists for the user.</returns>
+    /// <response code="200">The shopping basket was successfully deleted.</response>
+    /// <response code="404">The basket does not exist for the specified user.</response>
     [HttpDelete]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
@@ -98,9 +103,6 @@ public class BasketsController (ISender sender) : ControllerBase
        return Ok(result);
     }
     
-    //TODO Delete item in user basket
-    
-    
     /// <summary> Adds a product item to the user's shopping basket.</summary>
     /// <param name="userName"> The username identifying the shopping basket. </param>
     /// <param name="request"> The product identifier and quantity to add to the basket. </param>
@@ -119,5 +121,4 @@ public class BasketsController (ISender sender) : ControllerBase
 
         return Ok(result);
     }
-    
 }
