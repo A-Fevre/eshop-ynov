@@ -3,10 +3,7 @@ using Basket.API.Models;
 namespace Basket.API.Features.Baskets.Commands.RemoveBasketItem;
 
 /// <summary>
-/// Represents the result of executing the RemoveBasketItemCommand.
+/// Result of the remove basket item operation, containing the updated shopping cart.
 /// </summary>
-/// <remarks>
-/// This record contains the updated shopping cart after the item removal, allowing the client to refresh the basket state.
-/// </remarks>
-/// <param name="UpdatedCart">The shopping cart after the item(s) matching the product ID have been removed.</param>
+/// <param name="UpdatedCart">The basket after the item(s) have been removed.</param>
 public record RemoveBasketItemCommandResult(ShoppingCart UpdatedCart);

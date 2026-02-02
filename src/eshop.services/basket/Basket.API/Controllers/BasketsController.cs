@@ -61,11 +61,11 @@ public class BasketsController (ISender sender) : ControllerBase
     }
 
     /// <summary>
-    /// Removes an item from the shopping basket for the specified user by product ID.
+    /// Removes item(s) with the given product ID from the specified user's basket.
     /// </summary>
-    /// <param name="userName">The username whose shopping basket is to be modified.</param>
-    /// <param name="productId">The product ID of the item to remove from the basket.</param>
-    /// <returns>The updated shopping basket after the item removal, or a not-found response if no basket exists for the user.</returns>
+    /// <param name="userName">The username whose basket is to be updated.</param>
+    /// <param name="productId">The product ID of the item(s) to remove.</param>
+    /// <returns>The updated shopping cart, or 404 if the basket does not exist.</returns>
     [HttpDelete("items/{productId}")]
     [ProducesResponseType(typeof(ShoppingCart), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotFoundObjectResult), StatusCodes.Status404NotFound)]
