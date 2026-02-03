@@ -25,6 +25,8 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Mapster" Version="7.4.0" />
+        <PackageReference Include="MediatR" Version="13.0.0" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,6 +39,10 @@
         <Content Include="..\..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\eshop.shared\blocks\BuildingBlocks\BuildingBlocks.csproj" />
     </ItemGroup>
 
 </Project>
