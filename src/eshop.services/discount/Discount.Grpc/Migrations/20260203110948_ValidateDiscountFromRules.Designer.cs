@@ -3,6 +3,7 @@ using System;
 using Discount.Grpc.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Discount.Grpc.Migrations
 {
     [DbContext(typeof(DiscountContext))]
-    partial class DiscountContextModelSnapshot : ModelSnapshot
+    [Migration("20260203110948_ValidateDiscountFromRules")]
+    partial class ValidateDiscountFromRules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
@@ -80,22 +83,6 @@ namespace Discount.Grpc.Migrations
                             StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             Type = 1,
-                            Value = 10.0
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AllowOnSaleItems = true,
-                            Code = "WELCOME20",
-                            Description = "Bienvenue",
-                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
-                            IsCumulative = false,
-                            IsDeleted = false,
-                            MaxCumulativePercentage = 30.0,
-                            MinimumOrderAmount = 50.0,
-                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Status = 1,
-                            Type = 0,
                             Value = 10.0
                         });
                 });

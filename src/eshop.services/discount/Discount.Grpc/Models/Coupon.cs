@@ -10,13 +10,15 @@ public class Coupon
 
     public string Description { get; set; } = string.Empty;
 
-    public DiscountType Type { get; set; }
 
     public double Value { get; set; }
-
+    
+    public DiscountType Type { get; set; }
     public double MinimumOrderAmount { get; set; }
 
     public bool IsCumulative { get; set; }
+
+    public double MaxCumulativePercentage { get; set; } = 30.0;
 
     public DiscountStatus Status { get; set; }
 
@@ -25,4 +27,6 @@ public class Coupon
     public DateTime EndDate { get; set; }
 
     public bool IsDeleted { get; set; }
+    
+    public bool AllowOnSaleItems { get; set; } = true;
 }
