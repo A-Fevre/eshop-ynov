@@ -156,4 +156,57 @@ public class DiscountServiceServer(
 
         await dbContext.SaveChangesAsync();
     }
+    
+    public override async Task<ValidateDiscountResponse> ValidateDiscount(ValidateDiscountRequest request, ServerCallContext context)
+    {
+        var coupon = await dbContext.Coupons
+            .FirstOrDefaultAsync(c => c.Code == request.Code && !c.IsDeleted);
+
+        if (coupon == null || coupon.Status != DiscountStatus.Active)
+        {
+            return new ValidateDiscountResponse { IsValid = false, Message = "Coupon invalide ou expiré." };
+        }
+        
+        if (!coupon.AllowOnSaleItems && request.IsProductAlreadyDiscounted)
+        {
+            return new ValidateDiscountResponse 
+            { 
+                IsValid = false, 
+                Message = "Ce coupon ne peut pas être appliqué sur des articles déjà en promotion." 
+            };
+        }
+
+        double currentDiscount = request.CurrentAppliedDiscountPercentage;
+        double getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
+        double newTotalDiscount = currentDiscount + getPercentValue;
+
+        if (newTotalDiscount > coupon.MaxCumulativePercentage)
+        {
+            logger.LogWarning("Plafonnement appliqué pour le code {Code}. Tentative: {Attempt}%, Max: {Max}%", 
+                coupon.Code, newTotalDiscount, coupon.MaxCumulativePercentage);
+            
+            return new ValidateDiscountResponse 
+            { 
+                IsValid = true, 
+                AdjustedDiscountValue = coupon.MaxCumulativePercentage - currentDiscount,
+                Message = "La remise a été limitée au plafond maximum autorisé."
+            };
+        }
+        
+        if (request.OrderAmount < coupon.MinimumOrderAmount)
+        {
+            return new ValidateDiscountResponse { 
+                IsValid = false, 
+                Message = $"Le montant minimum de commande de {coupon.MinimumOrderAmount} n'est pas atteint." 
+            };
+        }
+        
+        double adjustedValue = coupon.Value;
+        if (newTotalDiscount > coupon.MaxCumulativePercentage)
+        {
+            adjustedValue = Math.Max(0, coupon.MaxCumulativePercentage - currentDiscount);
+        }
+
+        return new ValidateDiscountResponse { IsValid = true, AdjustedDiscountValue = coupon.Value };
+    }
 }

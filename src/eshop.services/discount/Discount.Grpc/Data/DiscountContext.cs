@@ -28,6 +28,20 @@ public sealed class DiscountContext(DbContextOptions<DiscountContext> options) :
                 StartDate = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
                 EndDate   = new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc),
                 IsDeleted = false
+            },
+            new Coupon
+            {
+                Id = 2,
+                Code = "WELCOME20",
+                Description = "Bienvenue",
+                Type = DiscountType.FixedAmount,
+                Value = 10,
+                MinimumOrderAmount = 50,
+                IsCumulative = false,
+                Status = DiscountStatus.Active,
+                StartDate = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
+                EndDate   = new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc),
+                IsDeleted = false
             }
         );
     }
