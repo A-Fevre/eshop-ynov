@@ -1,4 +1,5 @@
 using Discount.Grpc.Features.Discounts.Commands.ActivateDiscount;
+using Discount.Grpc.Features.Discounts.Commands.CreateCoupon;
 using Discount.Grpc.Features.Discounts.Queries.GetDiscountsByProduct;
 using Discount.Grpc.Features.Discounts.Queries.ValidateDiscount;
 using MediatR;
@@ -15,6 +16,23 @@ namespace Discount.Grpc.Controllers;
 [Produces("application/json")]
 public class DiscountsController(ISender sender) : ControllerBase
 {
+    /// <summary>
+    /// Crée un nouveau coupon de réduction (réservé aux administrateurs backoffice).
+    /// </summary>
+    /// <param name="request">Les informations du coupon à créer.</param>
+    /// <returns>Le résultat de la création avec les détails du coupon.</returns>
+    /// <response code="200">Le coupon a été créé avec succès.</response>
+    /// <response code="400">Les données du coupon sont invalides ou le code existe déjà.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(CreateCouponCommandResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BadRequestObjectResult), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CreateCouponCommandResult>> CreateCoupon(
+        [FromBody] CreateCouponCommand request)
+    {
+        var result = await sender.Send(request);
+        return Ok(result);
+    }
+
     /// <summary>
     /// Active un coupon de réduction (réservé aux administrateurs backoffice).
     /// Change le statut du coupon à "Active" pour le rendre utilisable par les clients.
