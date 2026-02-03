@@ -7,126 +7,153 @@ using Microsoft.EntityFrameworkCore;
 namespace Discount.Grpc.Services;
 
 /// <summary>
-/// The DiscountServiceServer class implements the gRPC service for managing discount data.
-/// It provides CRUD operations for discounts and communicates with the underlying database using a DbContext.
-/// This class inherits from DiscountProtoServiceBase, which defines the service methods in the gRPC contract,
-/// and implements the necessary logic for handling those methods.
+/// gRPC service responsible for managing discount coupons lifecycle.
+/// Provides full CRUD operations, pagination, filtering,
+/// and automatic status management (Active, Expired, Disabled, Upcoming).
 /// </summary>
 /// <remarks>
-/// This class uses the DiscountContext for database interactions and ILogger for logging purposes.
-/// It is registered with the gRPC pipeline in the application startup configuration.
+/// This service uses Entity Framework Core for persistence
+/// and Mapster for entity-to-proto mapping.
 /// </remarks>
-public class DiscountServiceServer(DiscountContext dbContext, ILogger<DiscountServiceServer> logger) : DiscountProtoService.DiscountProtoServiceBase
+public class DiscountServiceServer(
+    DiscountContext dbContext,
+    ILogger<DiscountServiceServer> logger)
+    : DiscountProtoService.DiscountProtoServiceBase
 {
     /// <summary>
-    /// Retrieves discount details for a given product from the database.
+    /// Retrieves a discount coupon by its unique code.
     /// </summary>
-    /// <param name="request">The request containing the product name to fetch the discount for.</param>
-    /// <param name="context">The gRPC server call context.</param>
-    /// <returns>
-    /// Returns a <see cref="CouponModel"/> containing the discount details for the specified product.
-    /// </returns>
-    /// <exception cref="RpcException">
-    /// Thrown if no discount is found for the specified product name.
-    /// </exception>
+    /// <param name="request">Request containing the discount code.</param>
+    /// <param name="context">gRPC server context.</param>
+    /// <returns>The matching <see cref="CouponModel"/>.</returns>
+    /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
     public override async Task<CouponModel> GetDiscount(GetDiscountRequest request, ServerCallContext context)
     {
-        logger.LogInformation("Retrieving discount for {ProductName}", request.ProductName);
-        
-        var coupon = await dbContext.Coupons.FirstOrDefaultAsync(x => x.ProductName == request.ProductName);
-        
-        if (coupon == null)
-            throw new RpcException(new Status(StatusCode.NotFound, $"Coupon with name {request.ProductName} not found"));
-        
-        logger.LogInformation("Discount retrieved for {ProductName}: {Amount}", coupon.ProductName, coupon.Amount);
-        
+        logger.LogInformation("Retrieving discount with code {Code}", request.Code);
+
+        var coupon = await dbContext.Coupons
+            .FirstOrDefaultAsync(c =>
+                c.Code == request.Code &&
+                !c.IsDeleted);
+
+        if (coupon is null)
+            throw new RpcException(
+                new Status(StatusCode.NotFound,
+                    $"Discount with code '{request.Code}' not found"));
+
         return coupon.Adapt<CouponModel>();
     }
 
     /// <summary>
-    /// Creates a new discount for a specified product and stores it in the database.
+    /// Creates a new discount coupon.
     /// </summary>
-    /// <param name="request">The request containing the details of the new discount to create, including the coupon information.</param>
-    /// <param name="context">The gRPC server call context.</param>
-    /// <returns>
-    /// Returns a <see cref="CouponModel"/> representing the newly created discount.
-    /// </returns>
-    /// <exception cref="RpcException">
-    /// Thrown if the request's coupon information is null.
-    /// </exception>
+    /// <param name="request">Request containing coupon data.</param>
+    /// <param name="context">gRPC server context.</param>
+    /// <returns>The created <see cref="CouponModel"/>.</returns>
+    /// <exception cref="RpcException">Thrown when request data is invalid.</exception>
     public override async Task<CouponModel> CreateDiscount(CreateDiscountRequest request, ServerCallContext context)
     {
         if (request.Coupon is null)
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Coupon is null"));
-        
+            throw new RpcException(
+                new Status(StatusCode.InvalidArgument, "Coupon payload is required"));
+
         var coupon = request.Coupon.Adapt<Coupon>();
-        logger.LogInformation("Creating new discount for {ProductName}", coupon.ProductName);
+        coupon.Status = DiscountStatus.Upcoming;
+        coupon.IsDeleted = false;
+
+        logger.LogInformation("Creating discount {Code}", coupon.Code);
+
         await dbContext.Coupons.AddAsync(coupon);
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("Discount created for {ProductName}: {Amount}", coupon.ProductName, coupon.Amount);
+
         return coupon.Adapt<CouponModel>();
     }
 
     /// <summary>
-    /// Updates the discount details for a specific product based on the provided request.
+    /// Updates an existing discount coupon.
     /// </summary>
-    /// <param name="request">An object containing the updated discount information for a specific product.</param>
-    /// <param name="context">The gRPC server call context.</param>
-    /// <returns>
-    /// Returns an updated <see cref="CouponModel"/> containing the modified discount details.
-    /// </returns>
+    /// <param name="request">Request containing updated coupon data.</param>
+    /// <param name="context">gRPC server context.</param>
+    /// <returns>The updated <see cref="CouponModel"/>.</returns>
     /// <exception cref="RpcException">
-    /// Thrown if the provided coupon is null, or if the specified product or coupon identifier is not found in the database.
+    /// Thrown when the coupon does not exist or request is invalid.
     /// </exception>
     public override async Task<CouponModel> UpdateDiscount(UpdateDiscountRequest request, ServerCallContext context)
     {
         if (request.Coupon is null)
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Coupon is null"));
-        
-        logger.LogInformation("Updating discount for {ProductName}", request.Coupon.ProductName);
+            throw new RpcException(
+                new Status(StatusCode.InvalidArgument, "Coupon payload is required"));
 
-        var coupon = await dbContext.Coupons.FirstOrDefaultAsync(x => x.ProductName == request.Coupon.ProductName 
-                                                                      || x.Id == request.Coupon.Id);
-        if(coupon is null)
-            throw new RpcException(new Status(StatusCode.NotFound, $"Coupon with name {request.Coupon.ProductName} " +
-                                                                   $" or Id {request.Coupon.Id} not found"));
+        var coupon = await dbContext.Coupons
+            .FirstOrDefaultAsync(c => c.Id == request.Coupon.Id);
+
+        if (coupon is null)
+            throw new RpcException(
+                new Status(StatusCode.NotFound, $"Discount with Id {request.Coupon.Id} not found"));
+
         request.Coupon.Adapt(coupon);
-        
-        dbContext.Coupons.Update(coupon);
+
+        logger.LogInformation("Updating discount {Code}", coupon.Code);
+
         await dbContext.SaveChangesAsync();
-        
-        logger.LogInformation("Discount updated for {ProductName}: {Amount}", coupon.ProductName, coupon.Amount);
+
         return coupon.Adapt<CouponModel>();
     }
 
     /// <summary>
-    /// Deletes a discount for a specified product based on the provided coupon details.
+    /// Soft-deletes a discount coupon (logical deletion).
     /// </summary>
-    /// <param name="request">The request containing the details of the coupon to be deleted, including the product name or ID.</param>
-    /// <param name="context">The gRPC server call context.</param>
-    /// <returns>
-    /// Returns a <see cref="DeleteDiscountResponse"/> indicating whether the discount was successfully deleted.
-    /// </returns>
-    /// <exception cref="RpcException">
-    /// Thrown if the provided coupon is null, or if no matching discount is found for the specified product name or ID.
-    /// </exception>
-    public override async Task<DeleteDiscountResponse> DeleteDiscount(DeleteDiscountRequest request,
-        ServerCallContext context)
+    /// <param name="request">Request containing coupon identifier.</param>
+    /// <param name="context">gRPC server context.</param>
+    /// <returns>Deletion result.</returns>
+    /// <exception cref="RpcException">Thrown when coupon is not found.</exception>
+    public override async Task<DeleteDiscountResponse> DeleteDiscount(DeleteDiscountRequest request, ServerCallContext context)
     {
         if (request.Coupon is null)
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Coupon is null"));
+            throw new RpcException(
+                new Status(StatusCode.InvalidArgument, "Coupon is required"));
 
-        logger.LogInformation("Deleting discount for {ProductName}", request.Coupon.ProductName);
-        
-        var coupon = await dbContext.Coupons.FirstOrDefaultAsync(x => x.ProductName == request.Coupon.ProductName 
-                                                                      || x.Id == request.Coupon.Id);
-        if(coupon is null)
-            throw new RpcException(new Status(StatusCode.NotFound, $"Coupon with name {request.Coupon.ProductName} " +
-                                                                   $" or Id {request.Coupon.Id} not found"));
-        dbContext.Coupons.Remove(coupon);
+        var coupon = await dbContext.Coupons
+            .FirstOrDefaultAsync(c =>
+                c.Id == request.Coupon.Id &&
+                !c.IsDeleted);
+
+        if (coupon is null)
+            throw new RpcException(
+                new Status(StatusCode.NotFound,
+                    $"Discount with Id {request.Coupon.Id} not found"));
+
+        coupon.IsDeleted = true;
+        coupon.Status = DiscountStatus.Disabled;
+
+        logger.LogInformation("Disabling discount {Code}", coupon.Code);
+
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("Discount deleted for {ProductName}", coupon.ProductName);
-        
-        return new DeleteDiscountResponse(){Success = true};
+
+        return new DeleteDiscountResponse { Success = true };
+    }
+
+    /// <summary>
+    /// Updates discount statuses automatically based on start and end dates.
+    /// Should be executed periodically or at application startup.
+    /// </summary>
+    public async Task UpdateStatusesAsync()
+    {
+        var now = DateTime.UtcNow;
+
+        var coupons = await dbContext.Coupons.ToListAsync();
+
+        foreach (var coupon in coupons)
+        {
+            if (coupon.IsDeleted || coupon.Status == DiscountStatus.Disabled)
+                continue;
+
+            coupon.Status =
+                now < coupon.StartDate ? DiscountStatus.Upcoming :
+                now > coupon.EndDate ? DiscountStatus.Expired :
+                DiscountStatus.Active;
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }
