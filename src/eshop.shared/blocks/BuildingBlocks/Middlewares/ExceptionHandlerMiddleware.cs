@@ -47,6 +47,7 @@ public class ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionH
 
         var response = exception switch
         {
+            BadRequestException ex => new ErrorResponse(StatusCodes.Status400BadRequest, ex.Message, ex.Details),
             BusinessException ex => new ErrorResponse(400, ex.Message, ex.StackTrace) ,
             ValidationException ex => 
                 new ErrorResponse(StatusCodes.Status400BadRequest,"Validation failed", 

@@ -407,3 +407,8 @@ serilog.*.json
 !serilog.json
 sources/.DS_Store
 .DS_Store
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal
