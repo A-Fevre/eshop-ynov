@@ -1,6 +1,5 @@
 using Discount.Grpc.Data;
 using Discount.Grpc.Models;
-using Discount.Grpc.Models.Enums;
 using Grpc.Core;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -30,17 +29,17 @@ public class DiscountServiceServer(
     /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
     public override async Task<CouponModel> GetDiscount(GetDiscountRequest request, ServerCallContext context)
     {
-        logger.LogInformation("Retrieving discount with code {Code}", request.ProductName);
+        logger.LogInformation("Retrieving discount with code {Code}", request.Code);
 
         var coupon = await dbContext.Coupons
             .FirstOrDefaultAsync(c =>
-                c.Code == request.ProductName &&
+                c.Code == request.Code &&
                 !c.IsDeleted);
 
         if (coupon is null)
             throw new RpcException(
                 new Status(StatusCode.NotFound,
-                    $"Discount with code '{request.ProductName}' not found"));
+                    $"Discount with code '{request.Code}' not found"));
 
         return coupon.Adapt<CouponModel>();
     }
