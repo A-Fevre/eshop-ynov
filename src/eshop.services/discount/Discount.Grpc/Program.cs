@@ -15,7 +15,12 @@ builder.WebHost.ConfigureKestrel(options =>
     // Port pour gRPC (HTTP/2) et REST (HTTP/1)
     options.ListenLocalhost(5052, o =>
     {
-        o.Protocols = HttpProtocols.Http1AndHttp2;
+        o.Protocols = HttpProtocols.Http2;
+    });
+    
+    options.ListenLocalhost(5552, o =>
+    {
+        o.Protocols = HttpProtocols.Http1;
     });
 });
 
