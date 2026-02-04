@@ -33,6 +33,7 @@ public sealed class DiscountContext(DbContextOptions<DiscountContext> options) :
             new Coupon
             {
                 Id = 2,
+                ProductName = "IPhone X",
                 Code = "WELCOME20",
                 Description = "Bienvenue",
                 Type = DiscountType.FixedAmount,

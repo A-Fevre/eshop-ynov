@@ -70,16 +70,35 @@ namespace Discount.Grpc.Migrations
                         new
                         {
                             Id = 1,
+                            AllowOnSaleItems = true,
                             Code = "WELCOME10",
                             Description = "Bienvenue",
                             EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
                             IsCumulative = false,
                             IsDeleted = false,
+                            MaxCumulativePercentage = 30.0,
                             MinimumOrderAmount = 50.0,
-                            ProductName = "Iphone X",
+                            ProductName = "IPhone X",
                             StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             Type = 1,
+                            Value = 10.0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AllowOnSaleItems = true,
+                            Code = "WELCOME20",
+                            Description = "Bienvenue",
+                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
+                            IsCumulative = false,
+                            IsDeleted = false,
+                            MaxCumulativePercentage = 30.0,
+                            MinimumOrderAmount = 50.0,
+                            ProductName = "IPhone X",
+                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            Type = 0,
                             Value = 10.0
                         });
                 });
