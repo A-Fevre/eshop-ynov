@@ -1,6 +1,7 @@
 using Basket.API.Data.Repositories;
 using Basket.API.Services;
 using BuildingBlocks.Behaviors;
+using BuildingBlocks.Messaging.MassTransit;
 using BuildingBlocks.Middlewares;
 using Discount.Grpc;
 using FluentValidation;
@@ -58,6 +59,8 @@ builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(
     }
     return handler;
 });
+
+builder.Services.AddMessageBroker(configuration);
 
 builder.Services.AddControllers();
 
