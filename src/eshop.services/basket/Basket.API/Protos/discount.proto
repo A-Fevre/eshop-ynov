@@ -13,6 +13,8 @@ service DiscountProtoService {
   rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
   rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
   
+  //Get discounts by product
+  rpc GetDiscountsByProduct (GetDiscountsByProductRequest) returns (GetDiscountsByProductResponse);
 }
 
 message GetDiscountRequest {
@@ -21,9 +23,27 @@ message GetDiscountRequest {
 
 message CouponModel {
   int32 id = 1;
-  string productName = 2;
+  string code = 2;
   string description = 3;
-  double amount = 4;
+  double value = 4;
+  DiscountType type = 5;
+  double minimumOrderAmount = 6;
+  bool isCumulative = 7;
+  DiscountStatus status = 8;
+  string startDate = 9;
+  string endDate = 10;
+}
+
+enum DiscountStatus {
+  UPCOMING = 0;
+  ACTIVE = 1;
+  EXPIRED = 2;
+  DISABLED = 3;
+}
+
+enum DiscountType {
+  FIXED_AMOUNT = 0;
+  PERCENTAGE = 1;
 }
 
 message CreateDiscountRequest {
@@ -40,4 +60,23 @@ message DeleteDiscountRequest {
 
 message DeleteDiscountResponse {
   bool success = 1;
+}
+
+message GetDiscountsRequest {
+  DiscountStatus status = 1;
+  int32 page = 2;
+  int32 pageSize = 3;
+}
+
+message GetDiscountsResponse {
+  repeated CouponModel coupons = 1;
+  int32 totalCount = 2;
+}
+
+message GetDiscountsByProductRequest {
+  string productId = 1;
+}
+
+message GetDiscountsByProductResponse {
+  repeated CouponModel coupons = 1;
 }

@@ -1,6 +1,9 @@
+using BuildingBlocks.Behaviors;
+using BuildingBlocks.Middlewares;
 using Discount.Grpc.Data;
 using Discount.Grpc.Data.Extensions;
 using Discount.Grpc.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -9,14 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
+    // Port pour gRPC (HTTP/2) et REST (HTTP/1)
     options.ListenLocalhost(5052, o =>
     {
-        o.Protocols = HttpProtocols.Http2;
-    });
-
-    options.ListenLocalhost(5552, o =>
-    {
-        o.Protocols = HttpProtocols.Http1;
+        o.Protocols = HttpProtocols.Http1AndHttp2;
     });
 });
 
@@ -25,6 +24,20 @@ var configuration = builder.Configuration;
 
 // Add services to the container.
 builder.Services.AddGrpc();
+
+// MediatR avec behaviors pour validation et logging
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
+
+// FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// Controllers pour API REST
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<DiscountContext>(options => options.UseSqlite(configuration.GetConnectionString("DiscountConnection")));
 
@@ -51,11 +64,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseCustomMigration();
 
+// Middleware de gestion des exceptions
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+
 // Configure the HTTP request pipeline.
 app.MapGrpcService<DiscountServiceServer>();
 
+// Map REST controllers
+app.MapControllers();
+
 app.MapGet("/",
     () =>
-        "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+        "Communication with gRPC endpoints must be made through a gRPC client. REST API available at /api/discounts. Documentation at /swagger.");
 
 app.Run();
