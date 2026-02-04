@@ -1,6 +1,7 @@
 using BuildingBlocks.CQRS;
 using BuildingBlocks.Pagination;
 using Catalog.API.Models;
+using Discount.Grpc;
 using Marten;
 
 namespace Catalog.API.Features.Products.Queries.GetProducts;
@@ -12,7 +13,7 @@ namespace Catalog.API.Features.Products.Queries.GetProducts;
 /// <remarks>
 /// This class interacts with the database session to load a list of paginated products.
 /// </remarks>
-public class GetProductsQueryHandler(IDocumentSession documentSession) : IQueryHandler<GetProductsQuery, GetProductsQueryResult>
+public class GetProductsQueryHandler(IDocumentSession documentSession, DiscountProtoService.DiscountProtoServiceClient discountProtoService) : IQueryHandler<GetProductsQuery, GetProductsQueryResult>
 {
     /// <summary>
     /// Handles the execution of the GetProductsQuery and retrieves the associated list of products data.
@@ -34,6 +35,21 @@ public class GetProductsQueryHandler(IDocumentSession documentSession) : IQueryH
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+        
+        foreach (var product in products)
+        {
+            try
+            {
+                var discount = await discountProtoService.GetDiscountByProductNameAsync(
+                    new GetDiscountRequest { ProductName = product.Name },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                product.Discount = discount;
+            }
+            catch
+            {
+                product.Discount = null;
+            }
+        }
 
         var paginated = new PaginatedResult<Product>(pageNumber, pageSize, totalCount, products);
 

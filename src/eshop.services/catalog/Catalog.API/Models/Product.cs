@@ -35,4 +35,9 @@ public class Product
     /// Gets or sets the list of categories associated with the product.
     /// </summary>
     public List<string> Categories { get; set; } = [];
+    
+    /// <summary>
+    /// Gets or sets the coupon model associated with the product
+    /// </summary>
+    public Discount.Grpc.CouponModel Discount { get; set; } = new();
 }

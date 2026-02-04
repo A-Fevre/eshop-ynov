@@ -13,7 +13,9 @@ service DiscountProtoService {
   rpc CreateDiscount (CreateDiscountRequest) returns (CouponModel);
   rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
   rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
-  rpc ValidateDiscount (ValidateDiscountRequest) returns (ValidateDiscountResponse);
+  
+  //Get discounts by product
+  rpc GetDiscountsByProduct (GetDiscountsByProductRequest) returns (GetDiscountsByProductResponse);
 }
 
 message GetDiscountRequest {
@@ -74,15 +76,10 @@ message GetDiscountsResponse {
   int32 totalCount = 2;
 }
 
-message ValidateDiscountRequest {
-  string code = 1;
-  double current_applied_discount_percentage = 2;
-  bool is_product_already_discounted = 3;
-  double order_amount = 4;
+message GetDiscountsByProductRequest {
+  string productId = 1;
 }
 
-message ValidateDiscountResponse {
-    bool IsValid = 1;
-    string Message = 2;
-    double AdjustedDiscountValue = 3;
+message GetDiscountsByProductResponse {
+  repeated CouponModel coupons = 1;
 }

@@ -27,7 +27,7 @@ public class DiscountServiceServer(
     /// <param name="context">gRPC server context.</param>
     /// <returns>The matching <see cref="CouponModel"/>.</returns>
     /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
-    public async Task<CouponModel> GetDiscountByCode(GetDiscountRequest request, ServerCallContext context)
+    public override async Task<CouponModel> GetDiscountByCode(GetDiscountRequest request, ServerCallContext context)
     {
         logger.LogInformation("Retrieving discount with code {Code}", request.Code);
 
@@ -51,7 +51,7 @@ public class DiscountServiceServer(
     /// <param name="context">gRPC server context.</param>
     /// <returns>The matching <see cref="CouponModel"/>.</returns>
     /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
-    public async Task<CouponModel> GetDiscountByProductName(GetDiscountRequest request, ServerCallContext context)
+    public override async Task<CouponModel> GetDiscountByProductName(GetDiscountRequest request, ServerCallContext context)
     {
         logger.LogInformation("Retrieving discount with code {Code}", request.ProductName);
 
@@ -193,7 +193,7 @@ public class DiscountServiceServer(
         {
             return new ValidateDiscountResponse 
             { 
-                IsValid = false, 
+                IsValid = false,
                 Message = "Ce coupon ne peut pas être appliqué sur des articles déjà en promotion." 
             };
         }
@@ -222,7 +222,7 @@ public class DiscountServiceServer(
                 Message = $"Le montant minimum de commande de {coupon.MinimumOrderAmount} n'est pas atteint." 
             };
         }
-        
+
         double adjustedValue = coupon.Value;
         if (newTotalDiscount > coupon.MaxCumulativePercentage)
         {
