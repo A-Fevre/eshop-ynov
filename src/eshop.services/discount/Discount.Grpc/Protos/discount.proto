@@ -17,19 +17,21 @@ service DiscountProtoService {
 
 message GetDiscountRequest {
   string code = 1;
+  string productName = 2;
 }
 
 message CouponModel {
   int32 id = 1;
-  string code = 2;
+  string productName = 2;
   string description = 3;
   double value = 4;
-  DiscountType type = 5;
-  double minimumOrderAmount = 6;
-  bool isCumulative = 7;
-  DiscountStatus status = 8;
-  string startDate = 9;
-  string endDate = 10;
+  string code = 5;
+  DiscountType type = 6;
+  double minimumOrderAmount = 7;
+  bool isCumulative = 8;
+  DiscountStatus status = 9;
+  string startDate = 10;
+  string endDate = 11;
 }
 
 enum DiscountStatus {

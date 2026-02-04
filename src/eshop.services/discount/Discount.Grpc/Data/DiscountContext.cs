@@ -18,6 +18,7 @@ public sealed class DiscountContext(DbContextOptions<DiscountContext> options) :
             new Coupon
             {
                 Id = 1,
+                ProductName = "IPhone X",
                 Code = "WELCOME10",
                 Description = "Bienvenue",
                 Type = DiscountType.Percentage,
