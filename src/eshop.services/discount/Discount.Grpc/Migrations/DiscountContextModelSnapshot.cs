@@ -98,6 +98,7 @@ namespace Discount.Grpc.Migrations
                             IsDeleted = false,
                             MaxCumulativePercentage = 30.0,
                             MinimumOrderAmount = 50.0,
+                            ProductName = "IPhone X",
                             StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             Type = 0,

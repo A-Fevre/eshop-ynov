@@ -42,8 +42,8 @@ public class CreateBasketCommandHandler(IBasketRepository repository, DiscountPr
     {
         foreach (var item in cart.Items)
         {
-            var coupon = await discountProtoServiceClient.GetDiscountAsync(new GetDiscountRequest
-                { Code = item.ProductName }, cancellationToken: cancellationToken);
+            var coupon = await discountProtoServiceClient.GetDiscountByProductNameAsync(new GetDiscountRequest
+                { ProductName = item.ProductName }, cancellationToken: cancellationToken);
             
             item.Price -= (decimal)coupon.Value;
         }

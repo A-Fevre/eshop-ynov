@@ -27,7 +27,7 @@ public class GetBasketByUserNameQueryHandler(IBasketRepository repository, Disco
         {
             try
             {
-                var discount = await discountProtoService.GetDiscountAsync(
+                var discount = await discountProtoService.GetDiscountByProductNameAsync(
                     new GetDiscountRequest { ProductName = item.ProductName },
                     cancellationToken: cancellationToken).ConfigureAwait(false);
                 
