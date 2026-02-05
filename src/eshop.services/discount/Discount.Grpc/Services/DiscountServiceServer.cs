@@ -182,9 +182,9 @@ public class DiscountServiceServer(
     public override async Task<ValidateDiscountResponse> ValidateDiscount(ValidateDiscountRequest request, ServerCallContext context)
     {
         var coupon = await dbContext.Coupons
-            .FirstOrDefaultAsync(c => c.Code == request.Code && !c.IsDeleted);
+            .FirstOrDefaultAsync(c => c.ProductName == string.Empty && !c.IsDeleted);
 
-        if (coupon == null || coupon.Status != DiscountStatus.Active)
+        if (coupon is not { Status: DiscountStatus.Active })
         {
             return new ValidateDiscountResponse { IsValid = false, Message = "Coupon invalide ou expiré." };
         }
@@ -198,9 +198,9 @@ public class DiscountServiceServer(
             };
         }
 
-        double currentDiscount = request.CurrentAppliedDiscountPercentage;
-        double getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
-        double newTotalDiscount = currentDiscount + getPercentValue;
+        var currentDiscount = request.CurrentAppliedDiscountPercentage;
+        var getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
+        var newTotalDiscount = currentDiscount + getPercentValue;
 
         if (newTotalDiscount > coupon.MaxCumulativePercentage)
         {
