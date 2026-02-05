@@ -11,29 +11,19 @@ namespace Discount.Grpc.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Coupon",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Code = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Value = table.Column<double>(type: "REAL", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    MinimumOrderAmount = table.Column<double>(type: "REAL", nullable: false),
-                    IsCumulative = table.Column<bool>(type: "INTEGER", nullable: false),
-                    MaxCumulativePercentage = table.Column<double>(type: "REAL", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AllowOnSaleItems = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Coupon", x => x.Id);
-                });
+            migrationBuilder.AddColumn<string>(
+                name: "MaxCumulativePercentage",
+                table: "Coupon",
+                type: "REAL",
+                nullable: false,
+                defaultValue: "");
+            
+            migrationBuilder.AddColumn<string>(
+                name: "AllowOnSaleItems",
+                table: "Coupon",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: true);
 
             migrationBuilder.InsertData(
                 table: "Coupon",
