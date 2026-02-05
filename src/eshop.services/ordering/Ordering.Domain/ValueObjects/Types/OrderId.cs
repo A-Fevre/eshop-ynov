@@ -4,18 +4,17 @@ namespace Ordering.Domain.ValueObjects.Types;
 
 public record OrderId
 {
-    public Guid Value { get; set; }
+    public Guid Value { get; private set; }
 
-    private OrderId(Guid value)
-    {
-        Value = value;   
-    }
+    private OrderId() {}
+
+    private OrderId(Guid value) => Value = value;
 
     public static OrderId Of(Guid value)
     {
         if(value == Guid.Empty)
             throw new DomainException("OrderId cannot be empty");
         
-        return new OrderId(value);  
+        return new OrderId(value);
     }
 }

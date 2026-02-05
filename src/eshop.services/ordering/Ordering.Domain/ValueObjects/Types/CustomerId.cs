@@ -4,7 +4,7 @@ namespace Ordering.Domain.ValueObjects;
 
 public record CustomerId
 {
-    public Guid Value { get; set; }
+    public Guid Value { get; }
 
     private CustomerId(Guid value)
     {

@@ -9,13 +9,12 @@ namespace Ordering.Domain.Models;
 /// </summary>
 public class OrderItem : Entity<OrderItemId>
 {
-    public ProductId ProductId { get; set; }
+    public ProductId ProductId { get; private set; }
+    public OrderId OrderId { get; private set; }
+    public decimal Price { get; private set; }
+    public int Quantity { get; private set; }
 
-    public OrderId OrderId { get; set; }
-
-    public decimal Price { get; set; }
-
-    public int Quantity { get; set; }
+    private OrderItem() {}
 
     internal OrderItem(ProductId productId, OrderId orderId, decimal price, int quantity)
     {

@@ -17,10 +17,4 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\Orders\Queries\GetOrdersByCustomer\" />
-      <Folder Include="Features\Orders\Queries\GetOrdersByName\" />
-      <Folder Include="Features\Orders\Queries\GetOrders\" />
-    </ItemGroup>
-
 </Project>
