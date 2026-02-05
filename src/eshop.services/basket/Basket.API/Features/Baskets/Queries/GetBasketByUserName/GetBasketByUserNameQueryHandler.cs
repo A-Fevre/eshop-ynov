@@ -45,7 +45,7 @@ public class GetBasketByUserNameQueryHandler(IBasketRepository repository, Disco
                 }
                 
                 var newPrice = item.Price - discountAmount;
-                item.Price = newPrice < 0 ? 0 : newPrice;
+                item.DiscountPrice = newPrice < 0 ? 0 : newPrice;
                 item.Code = discount.Code;
             }
             catch

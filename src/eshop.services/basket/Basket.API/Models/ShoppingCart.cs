@@ -13,6 +13,8 @@ public class ShoppingCart
     
     public decimal Total => Items.Sum(item => item.Price * item.Quantity);
 
+    public decimal DiscountPrice => Items.Sum(item => item.DiscountPrice * item.Quantity);
+    
     public ShoppingCart(string userName)
     {
         UserName  = userName;
