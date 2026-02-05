@@ -8,7 +8,8 @@ package discount;
 service DiscountProtoService {
   
   //Discount CRUD opérations
-  rpc GetDiscount (GetDiscountRequest) returns (CouponModel);
+  rpc GetDiscountByCode (GetDiscountRequest) returns (CouponModel);
+  rpc GetDiscountByProductName (GetDiscountRequest) returns (CouponModel);
   rpc CreateDiscount (CreateDiscountRequest) returns (CouponModel);
   rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
   rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
@@ -17,19 +18,21 @@ service DiscountProtoService {
 
 message GetDiscountRequest {
   string code = 1;
+  string productName = 2;
 }
 
 message CouponModel {
   int32 id = 1;
-  string code = 2;
+  string productName = 2;
   string description = 3;
   double value = 4;
-  DiscountType type = 5;
-  double minimumOrderAmount = 6;
-  bool isCumulative = 7;
-  DiscountStatus status = 8;
-  string startDate = 9;
-  string endDate = 10;
+  string code = 5;
+  DiscountType type = 6;
+  double minimumOrderAmount = 7;
+  bool isCumulative = 8;
+  DiscountStatus status = 9;
+  string startDate = 10;
+  string endDate = 11;
 }
 
 enum DiscountStatus {
@@ -76,6 +79,7 @@ message ValidateDiscountRequest {
   double current_applied_discount_percentage = 2;
   bool is_product_already_discounted = 3;
   double order_amount = 4;
+  string productName = 5;
 }
 
 message ValidateDiscountResponse {

@@ -27,7 +27,7 @@ public class DiscountServiceServer(
     /// <param name="context">gRPC server context.</param>
     /// <returns>The matching <see cref="CouponModel"/>.</returns>
     /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
-    public override async Task<CouponModel> GetDiscount(GetDiscountRequest request, ServerCallContext context)
+    public override async Task<CouponModel> GetDiscountByCode(GetDiscountRequest request, ServerCallContext context)
     {
         logger.LogInformation("Retrieving discount with code {Code}", request.Code);
 
@@ -40,6 +40,30 @@ public class DiscountServiceServer(
             throw new RpcException(
                 new Status(StatusCode.NotFound,
                     $"Discount with code '{request.Code}' not found"));
+
+        return coupon.Adapt<CouponModel>();
+    }
+    
+    /// <summary>
+    /// Retrieves a discount coupon by the product name.
+    /// </summary>
+    /// <param name="request">Request containing product name</param>
+    /// <param name="context">gRPC server context.</param>
+    /// <returns>The matching <see cref="CouponModel"/>.</returns>
+    /// <exception cref="RpcException">Thrown when the coupon does not exist.</exception>
+    public override async Task<CouponModel> GetDiscountByProductName(GetDiscountRequest request, ServerCallContext context)
+    {
+        logger.LogInformation("Retrieving discount with code {Code}", request.ProductName);
+
+        var coupon = await dbContext.Coupons
+            .FirstOrDefaultAsync(c =>
+                c.ProductName == request.ProductName &&
+                !c.IsDeleted);
+
+        if (coupon is null)
+            throw new RpcException(
+                new Status(StatusCode.NotFound,
+                    $"Discount with code '{request.ProductName}' not found"));
 
         return coupon.Adapt<CouponModel>();
     }
@@ -60,6 +84,7 @@ public class DiscountServiceServer(
         var coupon = request.Coupon.Adapt<Coupon>();
         coupon.Status = DiscountStatus.Upcoming;
         coupon.IsDeleted = false;
+        coupon.ProductName = request.Coupon.ProductName;
 
         logger.LogInformation("Creating discount {Code}", coupon.Code);
 
@@ -143,11 +168,8 @@ public class DiscountServiceServer(
 
         var coupons = await dbContext.Coupons.ToListAsync();
 
-        foreach (var coupon in coupons)
+        foreach (var coupon in coupons.Where(coupon => !coupon.IsDeleted && coupon.Status != DiscountStatus.Disabled))
         {
-            if (coupon.IsDeleted || coupon.Status == DiscountStatus.Disabled)
-                continue;
-
             coupon.Status =
                 now < coupon.StartDate ? DiscountStatus.Upcoming :
                 now > coupon.EndDate ? DiscountStatus.Expired :
@@ -160,9 +182,9 @@ public class DiscountServiceServer(
     public override async Task<ValidateDiscountResponse> ValidateDiscount(ValidateDiscountRequest request, ServerCallContext context)
     {
         var coupon = await dbContext.Coupons
-            .FirstOrDefaultAsync(c => c.Code == request.Code && !c.IsDeleted);
+            .FirstOrDefaultAsync(c => c.ProductName == string.Empty && !c.IsDeleted);
 
-        if (coupon == null || coupon.Status != DiscountStatus.Active)
+        if (coupon is not { Status: DiscountStatus.Active })
         {
             return new ValidateDiscountResponse { IsValid = false, Message = "Coupon invalide ou expiré." };
         }
@@ -171,14 +193,14 @@ public class DiscountServiceServer(
         {
             return new ValidateDiscountResponse 
             { 
-                IsValid = false, 
+                IsValid = false,
                 Message = "Ce coupon ne peut pas être appliqué sur des articles déjà en promotion." 
             };
         }
 
-        double currentDiscount = request.CurrentAppliedDiscountPercentage;
-        double getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
-        double newTotalDiscount = currentDiscount + getPercentValue;
+        var currentDiscount = request.CurrentAppliedDiscountPercentage;
+        var getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
+        var newTotalDiscount = currentDiscount + getPercentValue;
 
         if (newTotalDiscount > coupon.MaxCumulativePercentage)
         {
@@ -200,7 +222,7 @@ public class DiscountServiceServer(
                 Message = $"Le montant minimum de commande de {coupon.MinimumOrderAmount} n'est pas atteint." 
             };
         }
-        
+
         double adjustedValue = coupon.Value;
         if (newTotalDiscount > coupon.MaxCumulativePercentage)
         {

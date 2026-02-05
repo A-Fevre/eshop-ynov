@@ -1,6 +1,7 @@
 using BuildingBlocks.Behaviors;
 using BuildingBlocks.Middlewares;
 using Catalog.API.Data;
+using Discount.Grpc;
 using FluentValidation;
 using HealthChecks.UI.Client;
 using Marten;
@@ -25,6 +26,21 @@ builder.Services.AddMediatR(config =>
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+{
+    options.Address = new Uri(configuration.GetValue<string>("GrpcSettings:DiscountUrl") ?? string.Empty);   
+}).ConfigurePrimaryHttpMessageHandler (() =>
+{
+    var handler = new HttpClientHandler();
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        handler.ServerCertificateCustomValidationCallback = 
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+    }
+    return handler;
+});
 
 // Management PostGreSQl as NOSQL
 builder.Services.AddMarten(options =>

@@ -1,5 +1,6 @@
 using Basket.API.Data.Repositories;
 using BuildingBlocks.CQRS;
+using Discount.Grpc;
 
 namespace Basket.API.Features.Baskets.Queries.GetBasketByUserName;
 
@@ -8,7 +9,7 @@ namespace Basket.API.Features.Baskets.Queries.GetBasketByUserName;
 /// Implements the <see cref="IQueryHandler{TQuery, TResponse}"/> interface to process
 /// <see cref="GetBasketByUserNameQuery"/> and return a <see cref="GetBasketByUserNameQueryResult"/>.
 /// </summary>
-public class GetBasketByUserNameQueryHandler(IBasketRepository repository) : IQueryHandler<GetBasketByUserNameQuery, GetBasketByUserNameQueryResult>
+public class GetBasketByUserNameQueryHandler(IBasketRepository repository, DiscountProtoService.DiscountProtoServiceClient discountProtoService) : IQueryHandler<GetBasketByUserNameQuery, GetBasketByUserNameQueryResult>
 {
     /// <summary>
     /// Handles the execution of a query to retrieve the shopping basket associated with a specified username.
@@ -21,7 +22,40 @@ public class GetBasketByUserNameQueryHandler(IBasketRepository repository) : IQu
     {
         var basket = await repository.GetBasketByUserNameAsync(request.UserName, cancellationToken)
            .ConfigureAwait(false);
-
-       return new GetBasketByUserNameQueryResult(basket);
+    
+        foreach(var item in basket.Items)
+        {
+            try
+            {
+                var discount = await discountProtoService.GetDiscountByProductNameAsync(
+                    new GetDiscountRequest { ProductName = item.ProductName },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                
+                decimal discountAmount;
+                
+                // Pourcentage
+                if (discount.Type == DiscountType.Percentage)
+                {
+                    discountAmount = item.Price * (decimal)discount.Value / 100;
+                }
+                // Montant fixe
+                else
+                {
+                    discountAmount = (decimal)discount.Value;
+                }
+                
+                var newPrice = item.Price - discountAmount;
+                item.DiscountPrice = newPrice < 0 ? 0 : newPrice;
+                item.Code = discount.Code;
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        
+        await repository.CreateBasketAsync(basket, cancellationToken).ConfigureAwait(false);
+        
+        return new GetBasketByUserNameQueryResult(basket);
     }
 }

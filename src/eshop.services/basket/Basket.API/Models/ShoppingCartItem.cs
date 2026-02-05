@@ -6,12 +6,16 @@ namespace Basket.API.Models;
 public class ShoppingCartItem
 {
     public int Quantity {get;set;}
+    
+    public string Code { get; set; } = string.Empty;
 
     public string Color { get; set; } = string.Empty;
     
     public string ProductName {get;set;} = string.Empty;
     
     public decimal Price {get;set;}
+    
+    public decimal DiscountPrice {get;set;}
     
     public Guid ProductId {get;set;}
 }

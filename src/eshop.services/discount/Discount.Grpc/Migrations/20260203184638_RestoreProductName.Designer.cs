@@ -3,6 +3,7 @@ using System;
 using Discount.Grpc.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Discount.Grpc.Migrations
 {
     [DbContext(typeof(DiscountContext))]
-    partial class DiscountContextModelSnapshot : ModelSnapshot
+    [Migration("20260203184638_RestoreProductName")]
+    partial class RestoreProductName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.7");
@@ -21,9 +24,6 @@ namespace Discount.Grpc.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("AllowOnSaleItems")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Code")
@@ -42,9 +42,6 @@ namespace Discount.Grpc.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
-
-                    b.Property<double>("MaxCumulativePercentage")
-                        .HasColumnType("REAL");
 
                     b.Property<double>("MinimumOrderAmount")
                         .HasColumnType("REAL");
@@ -98,45 +95,11 @@ namespace Discount.Grpc.Migrations
                             IsDeleted = false,
                             MaxCumulativePercentage = 30.0,
                             MinimumOrderAmount = 50.0,
-                            ProductName = "Samsung 10",
+                            ProductName = "IPhone X",
                             StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             Type = 0,
                             Value = 10.0
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AllowOnSaleItems = true,
-                            Code = "WELCOME30",
-                            Description = "Applied only on basket",
-                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
-                            IsCumulative = false,
-                            IsDeleted = false,
-                            MaxCumulativePercentage = 30.0,
-                            MinimumOrderAmount = 300.0,
-                            ProductName = "",
-                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Status = 1,
-                            Type = 0,
-                            Value = 100.0
-                        },
-                        new
-                        {
-                            Id = 4,
-                            AllowOnSaleItems = true,
-                            Code = "HUAWEI_P",
-                            Description = "Applied only on huawei plus phone",
-                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
-                            IsCumulative = false,
-                            IsDeleted = false,
-                            MaxCumulativePercentage = 30.0,
-                            MinimumOrderAmount = 30.0,
-                            ProductName = "Huawei Plus",
-                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Status = 1,
-                            Type = 0,
-                            Value = 50.0
                         });
                 });
 #pragma warning restore 612, 618
