@@ -98,11 +98,45 @@ namespace Discount.Grpc.Migrations
                             IsDeleted = false,
                             MaxCumulativePercentage = 30.0,
                             MinimumOrderAmount = 50.0,
-                            ProductName = "IPhone X",
+                            ProductName = "Samsung 10",
                             StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Status = 1,
                             Type = 0,
                             Value = 10.0
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AllowOnSaleItems = true,
+                            Code = "WELCOME30",
+                            Description = "Applied only on basket",
+                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
+                            IsCumulative = false,
+                            IsDeleted = false,
+                            MaxCumulativePercentage = 30.0,
+                            MinimumOrderAmount = 300.0,
+                            ProductName = "",
+                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            Type = 0,
+                            Value = 100.0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AllowOnSaleItems = true,
+                            Code = "HUAWEI_P",
+                            Description = "Applied only on huawei plus phone",
+                            EndDate = new DateTime(2026, 12, 31, 23, 59, 59, 0, DateTimeKind.Utc),
+                            IsCumulative = false,
+                            IsDeleted = false,
+                            MaxCumulativePercentage = 30.0,
+                            MinimumOrderAmount = 30.0,
+                            ProductName = "Huawei Plus",
+                            StartDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Status = 1,
+                            Type = 0,
+                            Value = 50.0
                         });
                 });
 #pragma warning restore 612, 618

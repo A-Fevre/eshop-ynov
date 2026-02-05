@@ -22,7 +22,7 @@ public sealed class DiscountContext(DbContextOptions<DiscountContext> options) :
                 Code = "WELCOME10",
                 Description = "Bienvenue",
                 Type = DiscountType.Percentage,
-                Value = 10,
+                Value = 10.0,
                 MinimumOrderAmount = 50,
                 IsCumulative = false,
                 Status = DiscountStatus.Active,
@@ -33,12 +33,42 @@ public sealed class DiscountContext(DbContextOptions<DiscountContext> options) :
             new Coupon
             {
                 Id = 2,
-                ProductName = "IPhone X",
+                ProductName = "Samsung 10",
                 Code = "WELCOME20",
                 Description = "Bienvenue",
                 Type = DiscountType.FixedAmount,
-                Value = 10,
+                Value = 10.0,
                 MinimumOrderAmount = 50,
+                IsCumulative = false,
+                Status = DiscountStatus.Active,
+                StartDate = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
+                EndDate   = new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc),
+                IsDeleted = false
+            },
+            new Coupon
+            {
+                Id = 3,
+                ProductName = "",
+                Code = "WELCOME30",
+                Description = "Applied only on basket",
+                Type = DiscountType.FixedAmount,
+                Value = 100.0,
+                MinimumOrderAmount = 300,
+                IsCumulative = false,
+                Status = DiscountStatus.Active,
+                StartDate = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
+                EndDate   = new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc),
+                IsDeleted = false
+            },
+            new Coupon
+            {
+                Id = 4,
+                ProductName = "Huawei Plus",
+                Code = "HUAWEI_P",
+                Description = "Applied only on huawei plus phone",
+                Type = DiscountType.FixedAmount,
+                Value = 50.0,
+                MinimumOrderAmount = 30,
                 IsCumulative = false,
                 Status = DiscountStatus.Active,
                 StartDate = new DateTime(2026, 01, 01, 0, 0, 0, DateTimeKind.Utc),
