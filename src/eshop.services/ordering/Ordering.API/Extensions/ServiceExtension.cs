@@ -20,8 +20,6 @@ public static class ServiceExtension
     {
         services.AddControllers();
         
-        services.AddOpenApi();
-
         var connectionString = configuration.GetConnectionString("OrderingConnection");
         services.AddHealthChecks()
             .AddSqlServer(connectionString!);

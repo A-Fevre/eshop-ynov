@@ -1,5 +1,7 @@
 using BuildingBlocks.CQRS;
+using Microsoft.EntityFrameworkCore;
 using Ordering.Application.Features.Orders.Data;
+using Ordering.Domain.ValueObjects.Types;
 
 namespace Ordering.Application.Features.Orders.Commands.UpdateOrder;
 
@@ -12,7 +14,17 @@ public class UpdateOrderCommandHandler(IOrderingDbContext orderingDbContext) : I
 {
     public async Task<UpdateOrderCommandResult> Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
     {
-        // TODO
+        var orderId = OrderId.Of(request.Order.Id);
+        var order = await orderingDbContext.Orders.Include(o => o.OrderItems).FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+
+        if (order is null)
+        {
+            return new UpdateOrderCommandResult(false);
+        }
+
+        UpdateOrderCommandMapper.UpdateOrderWithNewValues(order, request.Order);
+
+        await orderingDbContext.SaveChangesAsync(cancellationToken);
 
         return new UpdateOrderCommandResult(true);
     }

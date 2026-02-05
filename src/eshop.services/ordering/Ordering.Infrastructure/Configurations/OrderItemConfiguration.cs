@@ -18,6 +18,14 @@ public class OrderItemConfiguration :IEntityTypeConfiguration<OrderItem>
             .WithMany()
             .HasForeignKey(c => c.ProductId);
         builder.Property(c => c.Quantity).IsRequired();
-        builder.Property(c => c.Price).IsRequired();
+        builder.Property(c => c.Price).HasPrecision(18, 2).IsRequired();
+        
+        builder.Property(oi => oi.OrderId)
+            .HasConversion(id => id.Value, dbId => OrderId.Of(dbId))
+            .IsRequired();
+
+        builder.Property(oi => oi.ProductId)
+            .HasConversion(id => id.Value, dbId => ProductId.Of(dbId))
+            .IsRequired();
     }
 }

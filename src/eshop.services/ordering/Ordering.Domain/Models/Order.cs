@@ -112,4 +112,17 @@ public class Order : Aggregate<OrderId>
         AddDomainEvent(new OrderUpdatedEvent(this));
 
     }
+    
+    public void UpdateStatus(OrderStatus newStatus)
+    {
+        if (OrderStatus == newStatus)
+            return;
+
+        if (OrderStatus == OrderStatus.Delivered)
+            throw new InvalidOperationException("A delivered order cannot change status.");
+
+        OrderStatus = newStatus;
+
+        AddDomainEvent(new OrderUpdatedEvent(this));
+    }
 }
