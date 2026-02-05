@@ -130,11 +130,12 @@ public class BasketsController (ISender sender) : ControllerBase
     /// <param name="request">The details of the checkout request, including basket information.</param>
     /// <returns>The result of the checkout operation, indicating success or failure status.</returns>
     [HttpPost("Checkout")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status201Created)]
-    public async Task<ActionResult<bool>> CheckOutBasket(string userName, [FromBody] CheckOutBasketCommand request)
+    [ProducesResponseType(typeof(CheckOutBasketCommandResult), StatusCodes.Status201Created)]
+    public async Task<ActionResult<CheckOutBasketCommandResult>> CheckOutBasket(string userName, [FromBody] CheckOutBasketCommand request)
     {
         request.BasketCheckoutDto.UserName = userName;
         var result = await sender.Send(request);
-        return Ok(result.IsSuccess);
+        
+        return Ok(result);
     }
 }
