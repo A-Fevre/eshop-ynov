@@ -1,5 +1,7 @@
 namespace Catalog.API.Models;
 
+using Discount.Grpc;
+
 /// <summary>
 /// Represents a product within the catalog. Provides details such as product name, description,
 /// price, associated categories, and an image file.
@@ -39,5 +41,5 @@ public class Product
     /// <summary>
     /// Gets or sets the coupon model associated with the product
     /// </summary>
-    public Discount.Grpc.CouponModel Discount { get; set; } = new();
+    public CouponModel Discount { get; set; } = new();
 }
