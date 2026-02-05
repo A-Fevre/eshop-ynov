@@ -79,6 +79,7 @@ message ValidateDiscountRequest {
   double current_applied_discount_percentage = 2;
   bool is_product_already_discounted = 3;
   double order_amount = 4;
+  string productName = 5;
 }
 
 message ValidateDiscountResponse {
