@@ -31,7 +31,19 @@ public class GetBasketByUserNameQueryHandler(IBasketRepository repository, Disco
                     new GetDiscountRequest { ProductName = item.ProductName },
                     cancellationToken: cancellationToken).ConfigureAwait(false);
                 
-                var discountAmount = (decimal)discount.Value;
+                decimal discountAmount;
+                
+                // Pourcentage
+                if (discount.Type == DiscountType.Percentage)
+                {
+                    discountAmount = item.Price * (decimal)discount.Value / 100;
+                }
+                // Montant fixe
+                else
+                {
+                    discountAmount = (decimal)discount.Value;
+                }
+                
                 var newPrice = item.Price - discountAmount;
                 item.Price = newPrice < 0 ? 0 : newPrice;
                 item.Code = discount.Code;
