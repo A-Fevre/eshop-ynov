@@ -14,8 +14,7 @@ public class GetOrdersQueryHandler(IOrderingDbContext orderingDbContext) : IQuer
     {
         var pageNumber = request.PageIndex < 1 ? 1 : request.PageIndex;
         var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
-
-
+        
         var orders = await orderingDbContext.Orders
             .Include(o => o.OrderItems)
             .OrderByDescending(o => o.Id)

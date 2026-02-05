@@ -17,19 +17,12 @@ public class GetOrdersByCustomerIdQueryHandler(IOrderingDbContext orderingDbCont
     {
         List<Order> orders = [];
         var customerId = CustomerId.Of(request.CustomerId);
-        try
-        {
-            orders = await orderingDbContext.Orders
-                .Include(o => o.OrderItems)
-                .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.Id)
-                .ToListAsync(cancellationToken);
-
-        }
-        catch (Exception ex)
-        {
-            //
-        }
+        
+        orders = await orderingDbContext.Orders
+            .Include(o => o.OrderItems)
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.Id)
+            .ToListAsync(cancellationToken);
         
         var ordersDto = orders
             .Select(o => o.ToOrderDto())
