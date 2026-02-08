@@ -37,9 +37,43 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
         
         var basket = basketResult.ShoppingCart;
         var totalPrice = basket.TotalSavings;
+        List<double> totalPercentageCode = [];
+        
+        var itemsWithDiscount = basket.Items
+            .Where(item => !string.IsNullOrEmpty(item.Code))
+            .ToList();
+        
+        foreach (var item in itemsWithDiscount)
+        {
+            var discount = await discountProtoService.GetDiscountByProductNameAsync(new GetDiscountRequest
+                { ProductName = item.ProductName }, cancellationToken: cancellationToken);
+            
+            try 
+            {
+                if (discount is null) continue;
+                
+                switch (discount.Type)
+                {
+                    case DiscountType.Percentage:
+                        totalPercentageCode.Add(discount.Value);
+                        break;
+                    case DiscountType.FixedAmount:
+                    {
+                        var percentage = discount.Value * 100 / (double)item.Price;
+                        totalPercentageCode.Add(percentage);
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        var totalPercentage = totalPercentageCode.Sum();
         
         var validateTask = discountProtoService.ValidateDiscountAsync(
-            new ValidateDiscountRequest { OrderAmount = (double)basket.Total},
+            new ValidateDiscountRequest { OrderAmount = (double)basket.TotalSavings, CurrentAppliedDiscountPercentage = totalPercentage},
             cancellationToken: cancellationToken);
         
         var validateResponse = validateTask.GetAwaiter().GetResult();
@@ -60,6 +94,10 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
             {
                 // ignored
             }
+        }
+        else if (validateResponse is { IsValid: false })
+        {
+            return new CheckOutBasketCommandResult(validateResponse.Message, totalPrice, false);
         }
         
         var eventMessage = request.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();

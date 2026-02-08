@@ -34,7 +34,7 @@ public class DiscountServiceServer(
         var coupon = await dbContext.Coupons
             .FirstOrDefaultAsync(c =>
                 c.Code == request.Code &&
-                !c.IsDeleted);
+                !c.IsDeleted && c.Status == DiscountStatus.Active);
 
         if (coupon is null)
             throw new RpcException(
@@ -58,7 +58,7 @@ public class DiscountServiceServer(
         var coupon = await dbContext.Coupons
             .FirstOrDefaultAsync(c =>
                 c.ProductName == request.ProductName &&
-                !c.IsDeleted);
+                !c.IsDeleted && c.Status == DiscountStatus.Active);
 
         if (coupon is null)
             throw new RpcException(
@@ -199,7 +199,7 @@ public class DiscountServiceServer(
         }
 
         var currentDiscount = request.CurrentAppliedDiscountPercentage;
-        var getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value * request.OrderAmount / 100 : coupon.Value;
+        var getPercentValue = coupon.Type == DiscountType.FixedAmount ? coupon.Value / request.OrderAmount * 100 : coupon.Value;
         var newTotalDiscount = currentDiscount + getPercentValue;
 
         if (newTotalDiscount > coupon.MaxCumulativePercentage)
@@ -221,12 +221,6 @@ public class DiscountServiceServer(
                 IsValid = false, 
                 Message = $"Le montant minimum de commande de {coupon.MinimumOrderAmount} n'est pas atteint." 
             };
-        }
-
-        double adjustedValue = coupon.Value;
-        if (newTotalDiscount > coupon.MaxCumulativePercentage)
-        {
-            adjustedValue = Math.Max(0, coupon.MaxCumulativePercentage - currentDiscount);
         }
 
         return new ValidateDiscountResponse { IsValid = true, AdjustedDiscountValue = coupon.Value };
