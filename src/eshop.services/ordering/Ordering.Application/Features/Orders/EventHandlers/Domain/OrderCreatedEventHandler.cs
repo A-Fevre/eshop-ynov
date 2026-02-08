@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Ordering.Application.Extensions;
+using Ordering.Domain.Abstractions;
 using Ordering.Domain.Events;
 
 namespace Ordering.Application.Features.Orders.EventHandlers.Domain;
@@ -12,7 +13,7 @@ namespace Ordering.Application.Features.Orders.EventHandlers.Domain;
 /// This handler is responsible for processing the <see cref="OrderCreatedEvent"/>
 /// and publishing an integration event based on the order details.
 /// </summary>
-public class OrderCreatedEventHandler(IPublishEndpoint publishEndpoint, IFeatureManager featureManager, ILogger<OrderCreatedEventHandler> logger) : INotificationHandler<OrderCreatedEvent>
+public class OrderCreatedEventHandler(IPublishEndpoint publishEndpoint, IFeatureManager featureManager, ILogger<OrderCreatedEventHandler> logger, IEmailService emailService) : INotificationHandler<OrderCreatedEvent>
 {
     /// <summary>
     /// Handles the domain event when a new order is created.
@@ -29,5 +30,9 @@ public class OrderCreatedEventHandler(IPublishEndpoint publishEndpoint, IFeature
             var orderCreatedIntegrationEvent = notification.Order.ToOrderDto();
             await publishEndpoint.Publish(orderCreatedIntegrationEvent, cancellationToken);
         }
+        string subject = $"Order Confirmation: #{notification.Order.Id.Value}";
+        string body = $"Hello, your order #{notification.Order.Id.Value} has been successfully created.";
+
+        await emailService.SendEmailAsync(notification.Order.ShippingAddress.EmailAddress, subject, body);
     }
 }
