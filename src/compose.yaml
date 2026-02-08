@@ -1,4 +1,4 @@
-﻿services:
+services:
   
   ### Common Service ###
   messageBroker:
@@ -125,6 +125,7 @@
       - ordering_network
       - basket_network
       - catalog_network
+      - discount_network
     depends_on:
       ordering.api:
         condition: service_started
