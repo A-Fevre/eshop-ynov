@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ordering.Application.Features.Orders.Data;
+using Ordering.Domain.Abstractions;
 using Ordering.Infrastructure.Data;
 using Ordering.Infrastructure.Data.Interceptors;
+using Ordering.Infrastructure.Mail;
 
 namespace Ordering.Infrastructure;
 
@@ -22,6 +24,8 @@ public static class ServiceExtension
             options.AddInterceptors(serviceProvider.GetServices<ISaveChangesInterceptor>());
             options.UseSqlServer(connectionString);
         });
+
+        services.AddTransient<IEmailService, SmtpEmailService>();
         
         return services;
     }
