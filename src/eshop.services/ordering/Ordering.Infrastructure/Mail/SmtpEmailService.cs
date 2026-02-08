@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
 using Ordering.Domain.Abstractions;
 
 namespace Ordering.Infrastructure.Mail
