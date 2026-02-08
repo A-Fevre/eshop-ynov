@@ -44,14 +44,27 @@ public class CreateBasketCommandHandler(IBasketRepository repository, DiscountPr
         {
             try
             {
-                var coupon = await discountProtoServiceClient.GetDiscountByProductNameAsync(new GetDiscountRequest
+                var discount = await discountProtoServiceClient.GetDiscountByProductNameAsync(new GetDiscountRequest
                     { ProductName = item.ProductName }, cancellationToken: cancellationToken);
                 
-                item.Price -= (decimal)coupon.Value;
+                // Pourcentage
+                if (discount.Type == DiscountType.Percentage)
+                {
+                    var calculatedPrice = item.Price - item.Price * ((decimal)discount.Value / 100);
+                    item.DiscountPrice = Math.Round(calculatedPrice, 2, MidpointRounding.AwayFromZero);
+
+                }
+                // Montant fixe
+                else
+                {
+                    item.DiscountPrice = (decimal)discount.Value;
+                }
+                
+                item.Code = discount.Code;
             }
             catch
             {
-                // ignored
+                item.DiscountPrice = item.Price;
             }
         }
     }

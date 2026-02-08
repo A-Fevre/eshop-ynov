@@ -29,64 +29,37 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
     public async Task<CheckOutBasketCommandResult> Handle(CheckOutBasketCommand request,
         CancellationToken cancellationToken)
     {
-        var basket = await repository.GetBasketByUserNameAsync(request.BasketCheckoutDto.UserName, cancellationToken)
-            .ConfigureAwait(false);
+        var basket = await repository.GetBasketByUserNameAsync(
+            request.BasketCheckoutDto.UserName,
+            cancellationToken
+        ).ConfigureAwait(false);
         
-        List<object> discountCodes = [];
-
-        foreach(var item in basket.Items)
+        var totalPrice = basket.TotalSavings;
+        List<double> totalPercentageCode = [];
+        
+        var itemsWithDiscount = basket.Items
+            .Where(item => !string.IsNullOrEmpty(item.Code))
+            .ToList();
+        
+        foreach (var item in itemsWithDiscount)
         {
-            try
+            var discount = await discountProtoService.GetDiscountByProductNameAsync(new GetDiscountRequest
+                { ProductName = item.ProductName }, cancellationToken: cancellationToken);
+            
+            try 
             {
-                var discount = await discountProtoService.GetDiscountByProductNameAsync(
-                    new GetDiscountRequest { ProductName = item.ProductName },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (discount is null) continue;
                 
-                decimal discountAmount;
-                
-                // Pourcentage
-                if (discount.Type == DiscountType.Percentage)
+                switch (discount.Type)
                 {
-                    discountAmount = item.Price * (decimal)discount.Value / 100;
-                }
-                // Montant fixe
-                else
-                {
-                    discountAmount = (decimal)discount.Value;
-                }
-                
-                var newPrice = item.Price - discountAmount;
-                item.Price = newPrice < 0 ? 0 : newPrice;
-                item.Code = discount.Code;
-                if(!string.IsNullOrEmpty(discount.Code))
-                    discountCodes.Add(item.Code);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-        
-        var discountTotal = string.Join(",", discountCodes);
-        
-        var validateResponse = discountProtoService.ValidateDiscountAsync(
-            new ValidateDiscountRequest { Code = discountTotal, OrderAmount = (double)basket.Total},
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-        
-        var totalPrice = basket.Items.Sum(i => i.Price);
-        
-        if (validateResponse.GetAwaiter().GetResult() != null)
-        {
-            try
-            {
-                if (validateResponse.GetAwaiter().GetResult().IsValid)
-                {
-                    var adjustedPercentage = (decimal)validateResponse.GetAwaiter().GetResult().AdjustedDiscountValue;
-                    if (adjustedPercentage != 0)
+                    case DiscountType.Percentage:
+                        totalPercentageCode.Add(discount.Value);
+                        break;
+                    case DiscountType.FixedAmount:
                     {
-                        var extraDiscount = totalPrice * adjustedPercentage / 100m;
-                        totalPrice -= extraDiscount;
-                        if (totalPrice < 0) totalPrice = 0;
+                        var percentage = discount.Value * 100 / (double)item.Price;
+                        totalPercentageCode.Add(percentage);
+                        break;
                     }
                 }
             }
@@ -95,27 +68,44 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
                 // ignored
             }
         }
+        var totalPercentage = totalPercentageCode.Sum();
+        
+        var validateTask = discountProtoService.ValidateDiscountAsync(
+            new ValidateDiscountRequest { OrderAmount = (double)basket.TotalSavings, CurrentAppliedDiscountPercentage = totalPercentage},
+            cancellationToken: cancellationToken);
+        
+        var validateResponse = validateTask.GetAwaiter().GetResult();
+        
+        switch (validateResponse)
+        {
+            case { IsValid: true, AdjustedDiscountValue: > 0 }:
+                try
+                {
+                    var adjustedPercentage = (decimal)validateResponse.AdjustedDiscountValue;
+                    if (adjustedPercentage != 0)
+                    {
+                        var extraDiscount = totalPrice * adjustedPercentage / 100m;
+                        totalPrice -= extraDiscount;
+                        if (totalPrice < 0) totalPrice = 0;
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
 
-        try
-        {
-            var totalProp = basket.GetType().GetProperty("TotalPrice");
-            if (totalProp != null && totalProp.CanWrite)
-            {
-                totalProp.SetValue(basket, totalPrice);
-            }
-        }
-        catch
-        {
-            // ignored
+                break;
+            case { IsValid: false }:
+                return new CheckOutBasketCommandResult(validateResponse.Message, totalPrice, false);
         }
         
         var eventMessage = request.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();
-        eventMessage.TotalPrice = basket.Total;
+        eventMessage.TotalPrice = totalPrice;
         
         await publishEndpoint.Publish(eventMessage, cancellationToken).ConfigureAwait(false);
         
         await repository.DeleteBasketAsync(request.BasketCheckoutDto.UserName, cancellationToken).ConfigureAwait(false);
         
-        return new CheckOutBasketCommandResult("Your basket have been validated", basket.Total,true);
+        return new CheckOutBasketCommandResult($"Your basket have been validated and applied {validateResponse.AdjustedDiscountValue:0.##}% on your basket !", totalPrice,true);
     }
 }

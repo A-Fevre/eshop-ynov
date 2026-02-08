@@ -22,39 +22,6 @@ public class GetBasketByUserNameQueryHandler(IBasketRepository repository, Disco
     {
         var basket = await repository.GetBasketByUserNameAsync(request.UserName, cancellationToken)
            .ConfigureAwait(false);
-    
-        foreach(var item in basket.Items)
-        {
-            try
-            {
-                var discount = await discountProtoService.GetDiscountByProductNameAsync(
-                    new GetDiscountRequest { ProductName = item.ProductName },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                
-                decimal discountAmount;
-                
-                // Pourcentage
-                if (discount.Type == DiscountType.Percentage)
-                {
-                    discountAmount = item.Price * (decimal)discount.Value / 100;
-                }
-                // Montant fixe
-                else
-                {
-                    discountAmount = (decimal)discount.Value;
-                }
-                
-                var newPrice = item.Price - discountAmount;
-                item.DiscountPrice = newPrice < 0 ? 0 : newPrice;
-                item.Code = discount.Code;
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-        
-        await repository.CreateBasketAsync(basket, cancellationToken).ConfigureAwait(false);
         
         return new GetBasketByUserNameQueryResult(basket);
     }
