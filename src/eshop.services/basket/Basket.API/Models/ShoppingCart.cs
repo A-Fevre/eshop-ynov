@@ -11,9 +11,9 @@ public class ShoppingCart
     public string UserName { get; set; } = string.Empty;
     public IEnumerable<ShoppingCartItem> Items { get; set; } = [];
     
-    public decimal Total => Items.Sum(item => item.Price * item.Quantity);
+    public decimal Total => Items.Sum(x => x.Price * x.Quantity);
 
-    public decimal DiscountPrice => Items.Sum(item => item.DiscountPrice * item.Quantity);
+    public decimal TotalSavings => Items.Sum(item => (item.DiscountPrice ?? 0) * item.Quantity);
     
     public ShoppingCart(string userName)
     {
