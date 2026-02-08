@@ -1,11 +1,9 @@
 using Basket.API.Data.Repositories;
-using Basket.API.Features.Baskets.Queries.GetBasketByUserName;
 using BuildingBlocks.CQRS;
 using BuildingBlocks.Messaging.Events;
 using Discount.Grpc;
 using Mapster;
 using MassTransit;
-using MediatR;
 
 namespace Basket.API.Features.Baskets.Commands.CheckOutBasket;
 
@@ -19,7 +17,7 @@ namespace Basket.API.Features.Baskets.Commands.CheckOutBasket;
 /// It also integrates with the messaging system via <see cref="IPublishEndpoint"/> to notify other systems
 /// about the basket checkout event.
 /// </remarks>
-public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublishEndpoint publishEndpoint, DiscountProtoService.DiscountProtoServiceClient discountProtoService, ISender sender)
+public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublishEndpoint publishEndpoint, DiscountProtoService.DiscountProtoServiceClient discountProtoService)
     : ICommandHandler<CheckOutBasketCommand, CheckOutBasketCommandResult>
 {
     /// <summary>
@@ -31,11 +29,11 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
     public async Task<CheckOutBasketCommandResult> Handle(CheckOutBasketCommand request,
         CancellationToken cancellationToken)
     {
-        var basketResult = await sender.Send(
-            new GetBasketByUserNameQuery(request.BasketCheckoutDto.UserName),
-            cancellationToken).ConfigureAwait(false);
+        var basket = await repository.GetBasketByUserNameAsync(
+            request.BasketCheckoutDto.UserName,
+            cancellationToken
+        ).ConfigureAwait(false);
         
-        var basket = basketResult.ShoppingCart;
         var totalPrice = basket.TotalSavings;
         List<double> totalPercentageCode = [];
         
@@ -78,26 +76,27 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
         
         var validateResponse = validateTask.GetAwaiter().GetResult();
         
-        if (validateResponse is { IsValid: true, AdjustedDiscountValue: > 0 })
+        switch (validateResponse)
         {
-            try
-            {
-                var adjustedPercentage = (decimal)validateResponse.AdjustedDiscountValue;
-                if (adjustedPercentage != 0)
+            case { IsValid: true, AdjustedDiscountValue: > 0 }:
+                try
                 {
-                    var extraDiscount = totalPrice * adjustedPercentage / 100m;
-                    totalPrice -= extraDiscount;
-                    if (totalPrice < 0) totalPrice = 0;
+                    var adjustedPercentage = (decimal)validateResponse.AdjustedDiscountValue;
+                    if (adjustedPercentage != 0)
+                    {
+                        var extraDiscount = totalPrice * adjustedPercentage / 100m;
+                        totalPrice -= extraDiscount;
+                        if (totalPrice < 0) totalPrice = 0;
+                    }
                 }
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-        else if (validateResponse is { IsValid: false })
-        {
-            return new CheckOutBasketCommandResult(validateResponse.Message, totalPrice, false);
+                catch
+                {
+                    // ignored
+                }
+
+                break;
+            case { IsValid: false }:
+                return new CheckOutBasketCommandResult(validateResponse.Message, totalPrice, false);
         }
         
         var eventMessage = request.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();
@@ -107,6 +106,6 @@ public class CheckOutBasketCommandHandler(IBasketRepository repository, IPublish
         
         await repository.DeleteBasketAsync(request.BasketCheckoutDto.UserName, cancellationToken).ConfigureAwait(false);
         
-        return new CheckOutBasketCommandResult("Your basket have been validated", totalPrice,true);
+        return new CheckOutBasketCommandResult($"Your basket have been validated and applied {validateResponse.AdjustedDiscountValue:0.##}% on your basket !", totalPrice,true);
     }
 }
