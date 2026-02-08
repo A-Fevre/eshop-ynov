@@ -9,7 +9,7 @@ namespace Basket.API.Features.Baskets.Commands.CreateBasket;
 /// Handles the creation of a shopping basket by processing the CreateBasketCommand.
 /// Implements the <see cref="ICommandHandler{CreateBasketCommand, CreateBasketCommandResult}"/> interface.
 /// </summary>
-public class CreateBasketCommandHandler(ILogger<CreateBasketCommandHandler> logger, IBasketRepository repository, DiscountProtoService.DiscountProtoServiceClient discountProtoServiceClient) : ICommandHandler<CreateBasketCommand, CreateBasketCommandResult>
+public class CreateBasketCommandHandler(IBasketRepository repository, DiscountProtoService.DiscountProtoServiceClient discountProtoServiceClient) : ICommandHandler<CreateBasketCommand, CreateBasketCommandResult>
 {
     /// <summary>
     /// Handles the request to create a shopping basket.
