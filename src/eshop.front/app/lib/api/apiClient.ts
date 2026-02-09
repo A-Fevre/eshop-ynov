@@ -1,13 +1,18 @@
 /**
  * URL de base du gateway API (utilisée par les services pour préfixer les routes).
- * - Côté serveur (SSR / loaders) : process.env.API_BASE_URL (chargé par Vite depuis .env)
- * - Côté client : import.meta.env.VITE_API_BASE_URL si défini
+ * - Côté serveur (SSR / loaders) : process.env.API_BASE_URL (Docker: http://yarpapigateway:6064)
+ * - Côté client (navigateur) : import.meta.env.VITE_API_BASE_URL (ex: http://localhost:6064)
  */
 export function getGatewayBase(): string {
+  // SSR / loaders : utiliser l’URL du gateway vue depuis le serveur (réseau Docker)
+  if (typeof process !== "undefined" && process.env?.API_BASE_URL) {
+    return String(process.env.API_BASE_URL).replace(/\/$/, "");
+  }
+  // Client (navigateur) ou fallback : URL inlinée au build ou défaut
   if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) {
     return String(import.meta.env.VITE_API_BASE_URL).replace(/\/$/, "");
   }
-  return "http://localhost:5050";
+  return "http://localhost:6064";
 }
 
 /**

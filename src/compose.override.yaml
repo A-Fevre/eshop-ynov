@@ -146,10 +146,13 @@ services:
       context: eshop.front
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://yarpapigateway:${GATEWAY_API_PORT:-6064}}
-        PICTURES_BASE_URL: ${PICTURES_BASE_URL:-https://idbyegxahkhicarnbekd.supabase.co/storage/v1/object/public/eshop_files}
+        # URL du gateway vue par le navigateur (exposée sur l’hôte Docker)
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:6064}
+        PICTURES_BASE_URL: https://idbyegxahkhicarnbekd.supabase.co/storage/v1/object/public/eshop_files
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
+      # SSR / loaders : appel au gateway depuis le conteneur (réseau Docker)
+      - API_BASE_URL=http://yarpapigateway:${GATEWAY_API_PORT:-6064}
