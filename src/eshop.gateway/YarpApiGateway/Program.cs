@@ -23,8 +23,8 @@ builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("fixed", opt =>
     {
-        opt.PermitLimit = 100;
-        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromSeconds(20);
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
     });
 });
