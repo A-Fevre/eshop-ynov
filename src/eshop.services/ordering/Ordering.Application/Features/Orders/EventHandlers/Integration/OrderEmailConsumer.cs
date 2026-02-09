@@ -35,7 +35,7 @@ public class OrderEmailConsumer(IEmailService emailService, ILogger<OrderEmailCo
         // Assuming OrderDto.OrderItems has ProductName, Quantity, Price
         var orderItemsRows = string.Join("", order.OrderItems.Select(item => $@"
             <tr>
-                <td style='padding: 10px 0;'>{item.ProductId}</td>
+                <td style='padding: 10px 0;'>{item.ProductName}</td>
                 <td style='padding: 10px 0; text-align: right;'>{item.Quantity}</td>
                 <td style='padding: 10px 0; text-align: right;'>${item.Price}</td>
             </tr>
@@ -45,7 +45,7 @@ public class OrderEmailConsumer(IEmailService emailService, ILogger<OrderEmailCo
         string body = $@"
         <mjml>
           <mj-body background-color='#f4f4f4'>
-            <mj-section background-color='#ffffff' padding-bottom='0px' padding-top='0'>
+            <mj-section background-color='#b599e6' padding-bottom='0px' padding-top='0'>
               <mj-column width='100%'>
                 <mj-image src='https://idbyegxahkhicarnbekd.supabase.co/storage/v1/object/public/eshop_mail_appearance/Gemini_Generated_Image_u5eaetu5eaetu5ea.png'
                           alt='eshop App' padding='0' width='600px'></mj-image>
@@ -59,7 +59,7 @@ public class OrderEmailConsumer(IEmailService emailService, ILogger<OrderEmailCo
                 </mj-text>
                 <mj-text align='left' color='#555' font-family='Helvetica Neue' line-height='24px'>
                    Hi {order.ShippingAddress.FirstName}, <br/><br/>
-                   Thanks for shopping with <strong>eshop</strong>! We’ve received order <strong>#{order.Id}</strong> and are getting it ready.
+                   Thanks for shopping with <strong>eshop</strong>! We’ve received order <strong>#{order.OrderName}</strong> and are getting it ready.
                 </mj-text>
                 
                 <mj-divider border-color='#eee' border-width='1px'></mj-divider>
@@ -101,7 +101,7 @@ public class OrderEmailConsumer(IEmailService emailService, ILogger<OrderEmailCo
         string body = $@"
         <mjml>
           <mj-body background-color='#f4f4f4'>
-            <mj-section background-color='#ffffff' padding-bottom='0px' padding-top='0'>
+            <mj-section background-color='#b599e6' padding-bottom='0px' padding-top='0'>
               <mj-column width='100%'>
                  <mj-image src='https://idbyegxahkhicarnbekd.supabase.co/storage/v1/object/public/eshop_mail_appearance/Gemini_Generated_Image_u5eaetu5eaetu5ea.png'
                            alt='eshop App' padding='0' width='600px'></mj-image>
@@ -115,7 +115,7 @@ public class OrderEmailConsumer(IEmailService emailService, ILogger<OrderEmailCo
                 </mj-text>
                 
                 <mj-text align='left' color='#555' font-family='Helvetica Neue' line-height='24px'>
-                   Good news! Your order <strong>#{order.Id}</strong> has been updated.<br/>
+                   Good news! Your order <strong>#{order.OrderName}</strong> has been updated.<br/>
                    <strong>Current Status: {order.OrderStatus}</strong>
                    <br/><br/>
                    It is making its way to you. You can track its journey using the button below.

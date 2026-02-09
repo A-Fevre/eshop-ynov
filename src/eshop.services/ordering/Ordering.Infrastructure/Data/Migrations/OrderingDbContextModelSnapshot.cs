@@ -110,6 +110,12 @@ namespace Ordering.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("ProductName");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 

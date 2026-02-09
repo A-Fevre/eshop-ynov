@@ -13,7 +13,6 @@ public class OrderUpdatedEventHandler(IPublishEndpoint publishEndpoint, ILogger<
     public async Task Handle(OrderUpdatedEvent notification, CancellationToken cancellationToken)
     {
         logger.LogInformation("Domain Event Handled: {DomainEvent}", notification.GetType().Name);
-        
         var orderDto = notification.Order.ToOrderDto();
         await publishEndpoint.Publish(orderDto,  cancellationToken);
     }
