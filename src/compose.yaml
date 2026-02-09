@@ -66,6 +66,7 @@ services:
       dockerfile: eShop.Services/Basket/Basket.API/Dockerfile
     networks:
       - basket_network
+      - catalog_network
       - messageBroker_network
     depends_on:
       basket.database:

@@ -25,7 +25,8 @@ builder.Services.AddMediatR(config =>
 
 builder.Services.AddHttpClient<ICatalogService, CatalogService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:6060");
+    var catalogUrl = configuration.GetValue<string>("ApiSettings:CatalogUrl") ?? "http://localhost:5050";
+    client.BaseAddress = new Uri(catalogUrl);
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
