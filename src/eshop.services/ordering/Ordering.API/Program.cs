@@ -1,12 +1,15 @@
+using BuildingBlocks.Messaging.MassTransit;
 using Ordering.API.Extensions;
 using Ordering.Application.Extensions;
 using Ordering.Infrastructure;
 using Ordering.Infrastructure.Data.Extensions;
 using Microsoft.OpenApi;
+using Ordering.Application.Features.Orders.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+builder.Services.AddMessageBroker(configuration, typeof(OrderEmailConsumer).Assembly);
 // Add services to the container.
 builder.Services
     .AddApplicationServices(configuration)
