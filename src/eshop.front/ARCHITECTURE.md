@@ -275,7 +275,7 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 // Factory pour créer des instances configurées
 export const createApiClient = (config?: Partial<ApiConfig>): ApiClient => {
   const defaultConfig = {
-    baseURL: process.env.API_BASE_URL || "http://localhost:5000",
+    baseURL: process.env.VITE_API_BASE_URL || "http://localhost:5000",
     timeout: 30000,
   };
   return new ApiClient(defaultConfig);

@@ -141,6 +141,25 @@ services:
         required: true
         restart: true
 
+  ### Frontend ###
+
+  eshop.front:
+    image: eshop.front
+    container_name: eshop_front
+    build:
+      context: eshop.front
+      dockerfile: Dockerfile
+    networks:
+      - catalog_network
+      - basket_network
+      - ordering_network
+      - discount_network
+    depends_on:
+      yarpapigateway:
+        condition: service_started
+        required: true
+        restart: true
+
 ### Shared infrastructure ###
 volumes:
   catalog_data:

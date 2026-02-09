@@ -4,9 +4,6 @@
  * - Côté client : import.meta.env.VITE_API_BASE_URL si défini
  */
 export function getGatewayBase(): string {
-  if (typeof process !== "undefined" && process.env?.API_BASE_URL) {
-    return process.env.API_BASE_URL.replace(/\/$/, "");
-  }
   if (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL) {
     return String(import.meta.env.VITE_API_BASE_URL).replace(/\/$/, "");
   }
