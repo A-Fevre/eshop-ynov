@@ -7,40 +7,34 @@ namespace Ordering.Infrastructure.Mail;
 
 public class SmtpEmailService : IEmailService
 {
-    // 1. Create a single instance of the renderer (it's thread-safe)
     private readonly IMjmlRenderer _mjmlRenderer = new MjmlRenderer();
 
     public async Task SendEmailAsync(string to, string subject, string body)
     {
         string finalHtmlBody;
-
-        // 2. DETECT if the body is MJML
+        
         if (body.Trim().StartsWith("<mjml>")) 
         {
             var renderResult = _mjmlRenderer.Render(body);
             if (renderResult.Errors.Count == 0)
             {
-                // If MJML renders successfully, it returns a full valid HTML document.
-                // We do NOT use WrapInBeautifulHtml here.
                 finalHtmlBody = renderResult.Html;
             }
             else
             {
-                // Fallback in case of render error
                 Console.WriteLine("MJML Render Error: " + string.Join(",", renderResult.Errors));
                 finalHtmlBody = WrapInBeautifulHtml($"<p>Could not render email template.</p><pre>{string.Join("\n", renderResult.Errors)}</pre>");
             }
         }
         else
         {
-            // If it's just a plain string, wrap it in our default container
             finalHtmlBody = WrapInBeautifulHtml(body);
         }
 
         var host = "sandbox.smtp.mailtrap.io";
         var port = 2525;
-        var username = "f37b7a584faf1b"; // typical placeholder
-        var password = "ead1941478a6a7"; // typical placeholder
+        var username = "f37b7a584faf1b";
+        var password = "ead1941478a6a7";
 
         using var client = new SmtpClient(host, port)
         {

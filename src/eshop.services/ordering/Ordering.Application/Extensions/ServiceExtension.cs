@@ -19,7 +19,6 @@ public static class ServiceExtension
         });
 
         services.AddFeatureManagement();
-        services.AddMessageBroker(configuration, Assembly.GetExecutingAssembly());
         
         return services;
     }
