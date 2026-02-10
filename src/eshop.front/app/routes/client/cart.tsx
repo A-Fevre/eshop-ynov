@@ -52,6 +52,13 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
 
 	const error = hookError;
 
+	const getValidImageUrl = (imageFile: string): string => {
+		if (!imageFile) {
+			return "/placeholder-product.svg";
+		}
+		return `${import.meta.env.VITE_PICTURES_BASE_URL}/${imageFile}`;
+	};
+
 	const handleUpdateQuantity = async (
 		productId: string,
 		newQuantity: number,
@@ -136,12 +143,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
 									{/* Product Image */}
 									<div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
 										<img
-											src={
-												item.imageFile?.startsWith("http") ||
-												item.imageFile?.startsWith("/")
-													? item.imageFile
-													: `/${item.imageFile}`
-											}
+											src={getValidImageUrl(item.imageFile ?? "")}
 											alt={item.productName}
 											className="w-full h-full object-cover"
 											onError={(e) => {
