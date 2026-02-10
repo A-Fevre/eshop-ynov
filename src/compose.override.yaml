@@ -156,3 +156,4 @@ services:
       - PORT=3000
       # SSR / loaders : appel au gateway depuis le conteneur (réseau Docker)
       - API_BASE_URL=http://yarpapigateway:${GATEWAY_API_PORT:-6064}
+      - VITE_PICTURES_BASE_URL=https://idbyegxahkhicarnbekd.supabase.co/storage/v1/object/public/eshop_files
